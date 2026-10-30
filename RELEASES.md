@@ -1,5 +1,25 @@
 # Published releases
 
+## 1.0.1 — October 30, 2026
+
+[Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.1).
+
+The app now opens on a drop-file homepage, pairs bills and amendments by filename without requesting a current version, and automatically saves to a remembered, changeable output folder. Names follow `AB 1982 Amends In March 25, 2026.pdf`. Missing files and unmarked amendments open the original instruction PDF with the affected amendment highlighted. Successful independent marks can be saved while failures remain clearly reported.
+
+Published successfully by [the verified workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41134395401), from main. Tag `v1.0.1` targets source commit `69a030d3edc2cd3b910a7ff3328cf8820043423e`.
+
+- All 135 source tests passed locally and on GitHub.
+- The actual 1.0.1 Windows EXE passed batch auto-save, folder restart/change/cancellation, stale-folder handling, successful retry recovery, duplicate/no-overwrite protection, partial results, issue-page highlighting, rapid popup reopening and accurate skipped-preview status.
+- Original AB 1967 and AB 2266 Previous+AMENDS pairs produced 8/8 and 10/10 marked amendments without another bill version or a manual date. Only three exact, previously reviewed AB 2266 OCR readings were confirmed after original-file hash checks.
+- All 424 packaged file hashes and all original input hashes remained unchanged. Native preview and exported PDF pixels matched exactly. Folder-choice interaction used controlled QA responses; trusted IPC and real file writes were exercised.
+- GitHub reconstructed the exact tested ZIP before publication; both published asset sizes and SHA-256 digests were verified.
+
+ZIP: `Amends-In-Maker-Windows-1.0.1.zip` (410,474,227 bytes).
+
+SHA-256: `899de95fa082b1524086f528ed9bbe86ac5c582e2824623447340faec21b33b9`.
+
+The exact receipt and package manifest are in `.github/release-receipts/1.0.1.json` and its companion manifest. Human review is still required for uncertain readings and unavailable locations; these checks are not a measured precision/recall benchmark.
+
 ## 1.0.0 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.0).
