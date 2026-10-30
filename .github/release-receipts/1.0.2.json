@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.2",
+  "sourceCommit": "789bd4429d2e4f47e07104a938a35b0118abc8b0",
+  "tag": "v1.0.2",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.2.package-manifest.json",
+  "manifestSHA256": "33436f85bad8978216c8ad3c86f0833ea76a2638aad716316d4e843d0b7ce113",
+  "archiveName": "Amends-In-Maker-Windows-1.0.2.zip",
+  "archiveBytes": 410474717,
+  "archiveSHA256": "069bc61c3e65a4ad4fa45452b467273a560ee8734c806c31e1f6411badf92ec3",
+  "startHere": "Amends In Maker 1.0.2\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] Amends In [Date].pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and circled numbers identify amendment locations.\r\nBlue arrows mark insertions; red lines mark strikes; blue lines with\r\nendpoint arrows mark strike-and-insert instructions. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.2",
+  "notes": "Improved PDF marking visibility and placement.\n\n- Blue replacement arrows now finish inside the struck text instead of extending into the following word. Short targets keep their arrows inside the selected text.\n- Insertion arrows have larger heads and thicker strokes, with longer stems when line spacing allows.\n\nAll 136 source tests passed. The actual packaged Windows app exported an italic their own test and a one-letter replacement without changing any pixels in the following words. Rendered insertion-arrow sizes increased, original inputs stayed unchanged, and preview/export pixels matched at the same zoom. The published ZIP must match the exact tested package manifest and checksum.\n\nExtract the complete ZIP and open Amends In Maker/Amends In Maker.exe."
+}
