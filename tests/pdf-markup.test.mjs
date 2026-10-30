@@ -44,21 +44,20 @@ test('all four approved markings use only original margin digits and complete ph
   assert.deepEqual(between.margin.map(m => m.lineNumber), [1, 2]);assert.equal(between.insertions.length, 1);assert.equal(between.insertions[0].direction, 'right');
   const center = l => l.margin.y + l.margin.height / 2;assert.ok(Math.abs(between.insertions[0].y - (center(previous.pages[0].lines[0]) + center(previous.pages[0].lines[1])) / 2) < 0.001);
   assert.deepEqual(strike.strikes.map(s => [s.sourceStart, s.sourceEnd]), [[redA.start, redA.end], [redB.start, redB.end]]);assert.equal(strike.insertions.length, 0);
-  assert.equal(replacement.strikes.length, 2);assert.equal(replacement.insertions.length, 1);const final = replacement.strikes.at(-1), arrow = replacement.insertions[0];assert.ok(arrow.x + PDF_MARK_STYLE.arrowWidth / 2 < final.x2);assert.ok(arrow.x - arrow.length >= final.x1 - 0.001);assert.equal(arrow.y, final.y2);
+  assert.equal(replacement.strikes.length, 2);assert.equal(replacement.insertions.length, 0);
   assert.ok(marks.amendments.flatMap(a => a.margin).every(m => m.rect.x + m.rect.width < 76));
   assert.ok(marks.labels.every((a, i) => marks.labels.every((b, j) => i === j || a.page !== b.page || a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y)));
   assert.deepEqual(PDF_MARK_STYLE.red, [0.79, 0.12, 0.19]);assert.deepEqual(PDF_MARK_STYLE.blue, [0.08, 0.36, 0.82]);
 });
 
-test('replacement arrows stay within the struck word and larger insertion arrows respect available line spacing', async () => {
+test('plain blue replacement lines stay within struck words and insertion arrows respect line spacing', async () => {
   const previous = await fixture(['their own wording remains.', 'a neighboring word remains.', 'The report, upon request, is available.', 'The next row stays clear.']);
   for (const target of ['their', 'a']) {
     const selection = range(previous, target==='a'?'a neighboring':target);if(target==='a')selection.end=selection.start+1;
     const marks = buildPdfMarks({previous, plan:plan([{number:1, action:'replace', sourceRanges:[selection]}])});
-    assert.equal(marks.ready, true, marks.issues.join('\n'));const arrow=marks.amendments[0].insertions[0], strike=marks.amendments[0].strikes[0];
-    assert.ok(arrow.x + PDF_MARK_STYLE.arrowWidth / 2 < strike.x2);assert.ok(arrow.x - arrow.length >= strike.x1 - 0.001);
+    assert.equal(marks.ready, true, marks.issues.join('\n'));const strike=marks.amendments[0].strikes[0];assert.equal(marks.amendments[0].insertions.length,0);assert.equal(strike.sourceStart,selection.start);assert.equal(strike.sourceEnd,selection.end);
     const next=previous.pages[0].lines.flatMap(l=>l.glyphs).find(g=>g.start>selection.end&&!/\s/.test(previous.doc.text.slice(g.start,g.end)));
-    assert.ok(next.x>arrow.x+PDF_MARK_STYLE.arrowWidth/2);await createMarkedPdf({previous,marks});
+    assert.ok(next.x>strike.x2);await createMarkedPdf({previous,marks});
   }
   const after=range(previous,'report,').end,marks=buildPdfMarks({previous,plan:plan([{number:2,action:'insert',insertion:{offset:after}}])});assert.equal(marks.ready,true);assert.ok(marks.amendments[0].insertions[0].length>7);
 });
@@ -77,11 +76,10 @@ test('every complete strikeout character is required; missing, partial OCR and o
   assert.equal(buildPdfMarks({previous, plan: plan([{number: 1, action: 'insert', insertion: {offset: word.start + 2}}])}).ready, false);
 });
 
-test('multiple insertions and replacement patches retain every location and one arrow per actual replacement', async () => {
+test('multiple insertions retain arrows while multi-patch replacements retain only complete blue lines', async () => {
   const previous = await fixture(['The old rule is retained.', 'The old rule is repeated.', 'This separate text is removed.']), a = range(previous, 'old rule is retained'), b = range(previous, 'old rule is repeated'), c = range(previous, 'separate text is removed');
   const replacing = buildPdfMarks({previous, plan: plan([{number: 7, action: 'replace', sourceRanges: [a, b, c], insertions: [{offset: a.end}, {offset: b.end}], patches: [{sourceRanges: [a], insertion: {offset: a.end}}, {sourceRanges: [b], insertion: {offset: b.end}}, {sourceRanges: [c], insertion: null}]}])});
-  assert.equal(replacing.ready, true, replacing.issues.join('\n'));assert.equal(replacing.amendments[0].strikes.length, 3);assert.equal(replacing.amendments[0].insertions.length, 2);assert.equal(replacing.labels.length, 3);
-  assert.deepEqual(replacing.amendments[0].insertions.map(i => i.y), replacing.amendments[0].strikes.slice(0, 2).map(s => s.y2));
+  assert.equal(replacing.ready, true, replacing.issues.join('\n'));assert.equal(replacing.amendments[0].strikes.length, 3);assert.equal(replacing.amendments[0].insertions.length, 0);assert.equal(replacing.labels.length, 3);
   const inserting = buildPdfMarks({previous, plan: plan([{number: 8, action: 'insert', insertions: [{offset: a.end}, {offset: b.end}]}])});assert.equal(inserting.ready, true);assert.equal(inserting.amendments[0].insertions.length, 2);assert.equal(inserting.labels.length, 2);
 });
 
@@ -129,7 +127,7 @@ test('the extracted amendment planner and PDF exporter integrate across all four
   const previous = await fixture(['The report, upon request, is available.', 'Before the insertion.', 'After the insertion.', 'The obsolete wording applies.', 'The period is 30 days.']);previous.doc = makeDocument([previous.doc.text], 'Previous');
   const instructions = {doc: makeDocument(['Amendment 1\nOn page 1, in line 1, after the first comma insert:\nin writing,\nAmendment 2\nOn page 1, between lines 2 and 3, insert:\nAdditional text.\nAmendment 3\nOn page 1, in line 4, strike out “obsolete wording”.\nAmendment 4\nOn page 1, in line 5, strike out “30 days” and insert:\n45 days'], 'Amendments')};
   const analyzed = planAmendments({previous, instructions});assert.equal(analyzed.ready, true, JSON.stringify(analyzed.issues));
-  const marks = buildPdfMarks({previous, plan: analyzed});assert.equal(marks.ready, true, JSON.stringify(marks.issues));assert.deepEqual(marks.amendments.map(m => m.action), ['insert', 'insert', 'delete', 'replace']);assert.equal(marks.amendments[3].insertions.length, 1);
+  const marks = buildPdfMarks({previous, plan: analyzed});assert.equal(marks.ready, true, JSON.stringify(marks.issues));assert.deepEqual(marks.amendments.map(m => m.action), ['insert', 'insert', 'delete', 'replace']);assert.equal(marks.amendments[3].insertions.length, 0);
   const output = await createMarkedPdf({previous, plan: analyzed, title: 'Amends In AB 1982 March 25, 2026'});assert.equal((await PDFDocument.load(output)).getPageCount(), 1);
 });
 

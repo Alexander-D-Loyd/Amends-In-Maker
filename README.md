@@ -36,7 +36,7 @@ Existing output files are skipped, never overwritten. Duplicate uploads are dete
 - **Insert after:** a small blue arrow at the exact insertion point.
 - **Insert between lines:** a blue arrow between the two printed margin numbers, highlighting both numbers.
 - **Strike:** a red line through the complete strikeout, including wrapped lines.
-- **Strike and insert:** a blue line through the complete strikeout, ending with a blue arrow.
+- **Strike and insert:** a blue line through the complete strikeout, with no arrowhead.
 
 The previous PDF's original words, pages, layout and existing marks are preserved. Inserted payload text is not placed in comment boxes. The numbered markers connect the location to the original amendment instruction. The popup's broad yellow instruction highlight is for review only and is not added to the output bill.
 

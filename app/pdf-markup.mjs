@@ -2,7 +2,7 @@ import {PDFDocument, StandardFonts, rgb} from './vendor/pdf-lib.esm.js';
 
 export const PDF_MARK_STYLE = Object.freeze({
   yellow: [1, 0.91, 0.12], blue: [0.08, 0.36, 0.82], red: [0.79, 0.12, 0.19],
-  strikeWidth: 1.25, arrowWidth: 1.3, arrowLength: 9, arrowHead: 4, labelHeight: 10, labelFontSize: 6.8,
+  strikeWidth: 1.25, arrowWidth: 1.3, arrowLength: 14, arrowHead: 4, labelHeight: 10, labelFontSize: 6.8,
 });
 const finite = n => Number.isFinite(n);
 const integer = n => Number.isSafeInteger(n);
@@ -162,21 +162,6 @@ export function buildPdfMarks({plan, previous} = {}) {
             const patchRows = touched.filter(({line}) => (patch.sourceRanges || []).some(range => overlaps(line, range)));
             const seenPages = new Set();for (const row of patchRows) if (!seenPages.has(row.page.page)) {markerRows.push(row);seenPages.add(row.page.page);}
           }
-          if (amendment.action === 'replace') {
-            const insertions = amendment.insertions?.length ? amendment.insertions : amendment.insertion ? [amendment.insertion] : !amendment.patches?.length ? [{offset: mark.strikes.at(-1).sourceEnd}] : [];
-            if (!insertions.length) throw Error('The strike-and-insert instruction has no resolved replacement endpoint.');
-            for (const insertion of insertions) {
-              const ends = mark.strikes.filter(s => s.sourceEnd === insertion.offset);
-              if (ends.length !== 1) throw Error('A replacement arrow has no unique complete strikeout endpoint.');
-              const last = ends[0], page = previous.pages.find(p => p.page === last.page), box = pageBox(page);
-              // The arrow lies over the final struck segment. Reserve room for
-              // its painted stroke so the point cannot enter the following word.
-              const x = last.x2 - PDF_MARK_STYLE.arrowWidth / 2 - 0.25;
-              const length = Math.min(PDF_MARK_STYLE.arrowLength, x - last.x1);
-              if (length < 0.5 || !inside(box, x, last.y2)) throw Error('There is no room within the strikeout endpoint for its replacement arrow.');
-              mark.insertions.push({page: last.page, x: round(x), y: last.y2, direction: 'right', length: round(length), replacementEnd: true});
-            }
-          }
         } else if (amendment.between) {
           const {page: pageNumber, above, below} = amendment.between;
           if (!integer(pageNumber) || !integer(above) || !integer(below) || below !== above + 1) throw Error('A between-line insertion needs consecutive printed margin numbers.');
@@ -186,7 +171,7 @@ export function buildPdfMarks({plan, previous} = {}) {
           if (a.line.baseline <= b.line.baseline || a.line.start >= b.line.start) throw Error('The between-line source order is unsupported.');
           const center = m => m.y + m.height / 2, y = (center(a.line.margin) + center(b.line.margin)) / 2;
           const tipX = Math.min(Math.max(a.line.margin.x + a.line.margin.width, b.line.margin.x + b.line.margin.width) + 7, Math.min(a.line.left, b.line.left) - 3);
-          const length = Math.min(18, tipX - Math.min(a.line.margin.x, b.line.margin.x));
+          const length = Math.min(PDF_MARK_STYLE.arrowLength, tipX - Math.min(a.line.margin.x, b.line.margin.x));
           if (length < 5) throw Error('The original margin has no clear space for the between-line arrow.');
           mark.insertions.push({page: pageNumber, x: round(tipX), y: round(y), direction: 'right', length: round(length), between: {above, below}});
           const marker = markerFor(a.line, a.page, number, 'between:' + above + ':' + below);marker.y = y;mark.markers.push(marker);touched.push(a, b);
@@ -217,8 +202,8 @@ function checkedPage(pages, number) {
 }
 function arrowSegments(insertion) {
   const {x, y, direction, length = PDF_MARK_STYLE.arrowLength} = insertion;
-  if (!['up', 'right'].includes(direction) || !finite(length) || length < (insertion.replacementEnd ? 0.5 : 2) || length > 24) throw Error('An insertion arrow has invalid geometry.');
-  const ux = direction === 'right' ? 1 : 0, uy = direction === 'up' ? 1 : 0, head = Math.min(PDF_MARK_STYLE.arrowHead, length * 0.5), half = Math.min(2.6, head * 0.65);
+  if (!['up', 'right'].includes(direction) || !finite(length) || length < 2 || length > 24) throw Error('An insertion arrow has invalid geometry.');
+  const ux = direction === 'right' ? 1 : 0, uy = direction === 'up' ? 1 : 0, head = Math.min(PDF_MARK_STYLE.arrowHead, length), half = Math.min(2.6, head * 0.65);
   return [[x - ux * length, y - uy * length, x, y], [x, y, x - ux * head - uy * half, y - uy * head + ux * half], [x, y, x - ux * head + uy * half, y - uy * head - ux * half]];
 }
 
@@ -235,7 +220,7 @@ export async function createMarkedPdf({bytes, marks, title = 'Amends In', previo
   for (const amendment of marks.amendments) {
     numberText(amendment.number);
     if (!['insert', 'delete', 'replace'].includes(amendment.action)) throw Error('An amendment action is invalid.');
-    if (amendment.action !== 'insert' && !amendment.strikes?.length || amendment.action !== 'delete' && !amendment.insertions?.length || !marks.labels?.some(label => label.numbers?.map(String).includes(String(amendment.number)))) throw Error('An amendment is missing its complete visible PDF marking.');
+    if (amendment.action !== 'insert' && !amendment.strikes?.length || amendment.action === 'insert' && !amendment.insertions?.length || amendment.action !== 'insert' && amendment.insertions?.length || !marks.labels?.some(label => label.numbers?.map(String).includes(String(amendment.number)))) throw Error('An amendment is missing its complete visible PDF marking or contains an unexpected arrow.');
     for (const highlight of amendment.margin || []) {
       const page = checkedPage(pages, highlight.page), key = highlight.page + ':' + JSON.stringify(highlight.rect);
       if (!validRect(highlight.rect, crop(page))) throw Error('A margin highlight falls outside the PDF crop box.');
