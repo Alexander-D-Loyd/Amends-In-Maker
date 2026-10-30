@@ -1,5 +1,19 @@
 # Published releases
 
+## 1.0.3 — October 30, 2026
+
+[Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.3).
+
+Strike-and-insert marks are now plain blue lines, with no arrowheads. Insert-after and between-line insertion arrows use common length, head and stroke settings, fitted to available source space. Packaged instructions and README reflect these conventions.
+
+All 136 source tests passed locally and on GitHub. The actual packaged Windows app produced replacement lines with no arrowheads and matching insertion-arrow extents at 288 dpi: 25 by 57 pixels for the upward arrow and 57 by 25 for the rightward arrow. Following-word pixels and original inputs were unchanged; preview and export pixels matched at the same zoom.
+
+Published from main by [the verified workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41137388602). Tag `v1.0.3` targets source `ce1e31eb205347c9e757662f9d9210eda183e529`. The exact 424-entry tested package was reconstructed before publication and both remote assets were verified.
+
+ZIP: `Amends-In-Maker-Windows-1.0.3.zip` (410,473,415 bytes).
+
+SHA-256: `58a7e59f1561498a95502239e934df5fbb892ade4e759bdbdc3aa07308279691`.
+
 ## 1.0.2 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.2).
