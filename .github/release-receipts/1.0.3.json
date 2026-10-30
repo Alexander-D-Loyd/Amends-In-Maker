@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.3",
+  "sourceCommit": "ce1e31eb205347c9e757662f9d9210eda183e529",
+  "tag": "v1.0.3",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.3.package-manifest.json",
+  "manifestSHA256": "2e80b7ee2361e1564ec3782983fe0805e6d2ede2a4a41d39effcdda72cc8f28f",
+  "archiveName": "Amends-In-Maker-Windows-1.0.3.zip",
+  "archiveBytes": 410473415,
+  "archiveSHA256": "58a7e59f1561498a95502239e934df5fbb892ade4e759bdbdc3aa07308279691",
+  "startHere": "Amends In Maker 1.0.3\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] Amends In [Date].pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and circled numbers identify amendment locations.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.3",
+  "notes": "Updated amendment marking styles.\n\n- Strike and insert now uses only a blue line through the entire struck text, with no arrowhead.\n- Insert-after and between-line insertion arrows share the same size, arrowhead and stroke settings, with stems fitted to the available source spacing.\n\nAll 136 source tests passed. The actual packaged Windows app produced plain blue replacement lines and matching rotated insertion-arrow dimensions in a rendered 288-dpi sample. Following-word pixels and original inputs stayed unchanged; preview and exported PDF pixels matched at the same zoom. Both source and packaged instructions describe the new styles. Publication requires the exact tested ZIP and manifest checksums.\n\nExtract the complete ZIP and open Amends In Maker/Amends In Maker.exe."
+}
