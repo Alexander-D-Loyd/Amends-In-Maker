@@ -1,5 +1,19 @@
 # Published releases
 
+## 1.0.2 — October 30, 2026
+
+[Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.2).
+
+Blue replacement arrows now finish within the struck text, including their painted stroke, so they do not extend into the following word. Short targets keep their arrows within the selected span. Insertion arrows have larger heads and thicker strokes; stems grow where line spacing allows.
+
+All 136 source tests passed locally and on GitHub. The actual packaged Windows app exported an italic `their own` case and a one-letter replacement: following-word pixels were identical to the original at 288 dpi. Insertion-arrow extents increased, original inputs remained unchanged, and preview/export pixels matched at the same zoom. The 424-entry package and both published assets matched the tested checksums.
+
+Published from main by [the verified workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41136303117). Tag `v1.0.2` targets source `789bd4429d2e4f47e07104a938a35b0118abc8b0`.
+
+ZIP: `Amends-In-Maker-Windows-1.0.2.zip` (410,474,717 bytes).
+
+SHA-256: `069bc61c3e65a4ad4fa45452b467273a560ee8734c806c31e1f6411badf92ec3`.
+
 ## 1.0.1 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.1).
