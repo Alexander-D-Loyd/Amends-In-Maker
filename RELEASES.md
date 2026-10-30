@@ -1,5 +1,23 @@
 # Published releases
 
+## 1.0.4 — October 30, 2026
+
+[Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.4).
+
+- Above/below printed-line instructions now place arrows in the correct margin gap, including above the first and below the last numbered line. Only the actual referenced number is highlighted. Missing lines, unsafe digit overlap and insufficient badge space remain held.
+- Red and blue strikeout lines are moderately thicker. Replacements remain plain blue lines.
+- Exact author and wrapped coauthor deletions are marked in their heading. Narrow, unambiguous title-worded author-role deletions are also supported; no general name-only or body-text fallback is used.
+- Filenames now follow `AB 1982 March 25 Amends In.pdf`, without a year. Full dates remain internal; identical month/day output names are reported as collisions.
+- A native PDF's established margin column can identify a short later page with one to three matching numbered rows. This does not lower the default OCR threshold or invent blank margin numbers.
+
+All 168 source tests passed locally and on GitHub. The actual packaged Windows app passed controlled first/last/internal arrow, three-line final page, thicker-strike, title/heading author, missing-line popup and new-filename checks. All six fixture PDF hashes and all 424 packaged file hashes stayed unchanged. Body/end-marker pixels outside requested strikeouts and preview/export pixels matched. The exact tested ZIP and both published asset digests were verified.
+
+Published from main by [the verified workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41141526499). Tag `v1.0.4` targets source `c6d33f7e38e3b561bf3c42368862268fa8fc37cb`. This functional release was published before the cleanup audit resumed.
+
+ZIP: `Amends-In-Maker-Windows-1.0.4.zip` (410,485,546 bytes).
+
+SHA-256: `66c4c7e15d250a5d55d8c50d7f8f305f6dd6f51d6f4c44e9d5be7a9b01102b82`.
+
 ## 1.0.3 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.3).
