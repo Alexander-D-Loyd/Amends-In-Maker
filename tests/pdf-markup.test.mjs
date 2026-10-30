@@ -44,10 +44,23 @@ test('all four approved markings use only original margin digits and complete ph
   assert.deepEqual(between.margin.map(m => m.lineNumber), [1, 2]);assert.equal(between.insertions.length, 1);assert.equal(between.insertions[0].direction, 'right');
   const center = l => l.margin.y + l.margin.height / 2;assert.ok(Math.abs(between.insertions[0].y - (center(previous.pages[0].lines[0]) + center(previous.pages[0].lines[1])) / 2) < 0.001);
   assert.deepEqual(strike.strikes.map(s => [s.sourceStart, s.sourceEnd]), [[redA.start, redA.end], [redB.start, redB.end]]);assert.equal(strike.insertions.length, 0);
-  assert.equal(replacement.strikes.length, 2);assert.equal(replacement.insertions.length, 1);const final = replacement.strikes.at(-1);assert.equal(replacement.insertions[0].x, Number((final.x2 + 7).toFixed(4)));assert.equal(replacement.insertions[0].y, final.y2);
+  assert.equal(replacement.strikes.length, 2);assert.equal(replacement.insertions.length, 1);const final = replacement.strikes.at(-1), arrow = replacement.insertions[0];assert.ok(arrow.x + PDF_MARK_STYLE.arrowWidth / 2 < final.x2);assert.ok(arrow.x - arrow.length >= final.x1 - 0.001);assert.equal(arrow.y, final.y2);
   assert.ok(marks.amendments.flatMap(a => a.margin).every(m => m.rect.x + m.rect.width < 76));
   assert.ok(marks.labels.every((a, i) => marks.labels.every((b, j) => i === j || a.page !== b.page || a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y)));
   assert.deepEqual(PDF_MARK_STYLE.red, [0.79, 0.12, 0.19]);assert.deepEqual(PDF_MARK_STYLE.blue, [0.08, 0.36, 0.82]);
+});
+
+test('replacement arrows stay within the struck word and larger insertion arrows respect available line spacing', async () => {
+  const previous = await fixture(['their own wording remains.', 'a neighboring word remains.', 'The report, upon request, is available.', 'The next row stays clear.']);
+  for (const target of ['their', 'a']) {
+    const selection = range(previous, target==='a'?'a neighboring':target);if(target==='a')selection.end=selection.start+1;
+    const marks = buildPdfMarks({previous, plan:plan([{number:1, action:'replace', sourceRanges:[selection]}])});
+    assert.equal(marks.ready, true, marks.issues.join('\n'));const arrow=marks.amendments[0].insertions[0], strike=marks.amendments[0].strikes[0];
+    assert.ok(arrow.x + PDF_MARK_STYLE.arrowWidth / 2 < strike.x2);assert.ok(arrow.x - arrow.length >= strike.x1 - 0.001);
+    const next=previous.pages[0].lines.flatMap(l=>l.glyphs).find(g=>g.start>selection.end&&!/\s/.test(previous.doc.text.slice(g.start,g.end)));
+    assert.ok(next.x>arrow.x+PDF_MARK_STYLE.arrowWidth/2);await createMarkedPdf({previous,marks});
+  }
+  const after=range(previous,'report,').end,marks=buildPdfMarks({previous,plan:plan([{number:2,action:'insert',insertion:{offset:after}}])});assert.equal(marks.ready,true);assert.ok(marks.amendments[0].insertions[0].length>7);
 });
 
 test('every complete strikeout character is required; missing, partial OCR and out-of-page glyphs block output', async () => {
