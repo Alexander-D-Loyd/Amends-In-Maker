@@ -51,7 +51,7 @@ export function planAmendments({previous,instructions,digest=null,externalDocs={
  let plan;try{plan=amendmentPlan(text,prev,prev,external);}catch(error){return {ready:false,amendments:[],issues:[issue('PLAN_FAILED',error.message,{source:'instructions',...(instructions?.id?{entryId:instructions.id}:{})})],warnings,verification:[]};}
  if(!plan.compiled.length)return {ready:false,amendments:[],issues:[issue('NO_AMENDMENTS_FOUND','No active amendment instructions were found in this PDF.',{source:'instructions',...(instructions?.id?{entryId:instructions.id}:{})})],warnings,verification:[]};
  const amendments=plan.compiled.map(rule=>{
-  const row={...instructionIssueContext(instructions,rule.number),number:String(rule.number),action:rule.action,directive:rule.directive,insertText:rule.insertText,sourceRanges:[],insertion:null,insertions:[],between:rule.between?{page:rule.page,above:rule.between[0],below:rule.between[1]}:null,patches:[],ready:true,issues:[]};
+  const row={...instructionIssueContext(instructions,rule.number),number:String(rule.number),action:rule.action,directive:rule.directive,insertText:rule.insertText,sourceRanges:[],insertion:null,insertions:[],between:rule.between?{page:rule.page,above:rule.between[0],below:rule.between[1]}:null,lineInsertion:null,patches:[],ready:true,issues:[]};
   const reject=(code,message)=>{row.ready=false;const value=issue(code,message,instructionIssueContext(instructions,row.number));row.issues.push(value);issues.push(value);};
   if(rule.error)reject('SOURCE_LOCATION_UNRESOLVED',rule.error);
   if(rule.attachmentWarning)reject('DRAFTING_ATTACHMENT_REQUIRED',rule.attachmentWarning);
@@ -60,11 +60,12 @@ export function planAmendments({previous,instructions,digest=null,externalDocs={
   try{
    for(const patch of rule.patches){
     const ranges=sourceRanges(prev,plan.previous,patch);row.sourceRanges.push(...ranges);
+    if(patch.lineInsertion){if(row.lineInsertion&&JSON.stringify(row.lineInsertion)!==JSON.stringify(patch.lineInsertion))throw Error('This amendment has incompatible relative-line insertion locations.');row.lineInsertion={...patch.lineInsertion};}
     let offset=null;
     if(patch.start===patch.end){offset=patch.sourceOffset??plan.previous[patch.start]?.start??plan.previous.at(-1)?.end;if(!Number.isInteger(offset)||offset<0||offset>prev.text.length)throw Error('The insertion point cannot be bound to an exact original source offset.');}
     else if(rule.action==='replace'&&patch.replacement.length)offset=ranges.at(-1).end;
-    if(offset!==null)row.insertions.push({offset,page:rule.page,kind:rule.between?'between-lines':rule.position||'after',finalInsertion:!!patch.finalInsertion});
-    row.patches.push({sourceRanges:ranges,insertion:offset===null?null:{offset},replacement:patch.replacement,tokenStart:patch.start,tokenEnd:patch.end});
+    if(offset!==null)row.insertions.push({offset,page:patch.lineInsertion?.page??rule.page,kind:patch.lineInsertion?'line-'+patch.lineInsertion.position:rule.between?'between-lines':rule.position||'after',finalInsertion:!!patch.finalInsertion,...(patch.lineInsertion?{lineInsertion:{...patch.lineInsertion}}:{})});
+    row.patches.push({sourceRanges:ranges,insertion:offset===null?null:{offset},replacement:patch.replacement,tokenStart:patch.start,tokenEnd:patch.end,...(patch.lineInsertion?{lineInsertion:{...patch.lineInsertion}}:{})});
    }
    row.insertion=row.insertions.length===1?row.insertions[0]:null;
    if(rule.action==='replace'&&!row.insertions.length)throw Error('A strike-and-insert instruction has no final replacement endpoint.');

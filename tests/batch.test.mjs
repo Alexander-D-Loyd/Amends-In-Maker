@@ -8,9 +8,9 @@ const instruction='Amendment 1\nOn page 1, in line 1, strike out “30 days” a
 const bill=(id,number,date,body=text)=>make(id,number+' '+id+'.pdf',body,{billId:number,kind:'bill',date});
 const amends=(id,number,date,body=instruction)=>make(id,number+' AMENDS '+id+'.pdf',body,{billId:number,kind:'amendments',date});
 
-test('dates and output names preserve the instruction-set date and reject unsafe or nonexistent values',()=>{
- assert.equal(outputFilename('AB 1982','2026-03-25'),'AB 1982 Amends In March 25, 2026.pdf');assert.equal(outputFilename('SB879','2024-02-29'),'SB 879 Amends In February 29, 2024.pdf');
- for(const date of ['2026-02-29','2026-04-31','2026-00-01','2026-01-00','26-03-25','2026-3-25','not a date'])assert.equal(validDate(date),false,date);assert.equal(outputFilename('../AB 1','2026-03-25'),'');
+test('output names omit the year while source dates remain complete and valid',()=>{
+ assert.equal(outputFilename('AB 1982','2026-03-25'),'AB 1982 March 25 Amends In.pdf');assert.equal(outputFilename('SB879','2024-02-29'),'SB 879 February 29 Amends In.pdf');
+ for(const date of ['2026-02-29','2026-04-31','2026-00-01','2026-01-00','26-03-25','2026-3-25','not a date']){assert.equal(validDate(date),false,date);assert.equal(outputFilename('AB 1982',date),'',date);}assert.equal(outputFilename('../AB 1','2026-03-25'),'');
 });
 
 test('filename and source headings must identify one bill unless explicitly confirmed by a human',()=>{
@@ -24,7 +24,7 @@ test('administrative header word-spacing losses never hide a conflicting bill id
 
 test('batch grouping handles multiple bills and inverse-looking filename counters using dated content',()=>{
  const entries=[bill('v99','AB 1982','2026-03-01'),bill('v98','AB 1982','2026-03-25','line 1 The period is 45 days.'),amends('a','AB 1982','2026-03-25'),bill('s-v99','SB 879','2026-03-02'),bill('s-v98','SB 879','2026-03-26','line 1 The period is 45 days.'),amends('s-a','SB 879','2026-03-26')];
- const before=JSON.stringify(entries),groups=analyzeBatch(entries);assert.equal(groups.length,2);assert.ok(groups.every(g=>g.ready));assert.equal(groups[0].previous.id,'v99');assert.ok(groups.every(g=>g.current===null&&!Object.hasOwn(g.assignment,'currentId')));assert.equal(groups[1].previous.id,'s-v99');assert.equal(groups[0].outputFilename,'AB 1982 Amends In March 25, 2026.pdf');assert.equal(JSON.stringify(entries),before);
+ const before=JSON.stringify(entries),groups=analyzeBatch(entries);assert.equal(groups.length,2);assert.ok(groups.every(g=>g.ready));assert.equal(groups[0].previous.id,'v99');assert.ok(groups.every(g=>g.current===null&&!Object.hasOwn(g.assignment,'currentId')));assert.equal(groups[1].previous.id,'s-v99');assert.equal(groups[0].outputFilename,'AB 1982 March 25 Amends In.pdf');assert.equal(JSON.stringify(entries),before);
 });
 
 test('version counters or changed wording never select a bill by cross-checking another version',()=>{
@@ -39,6 +39,14 @@ test('one undated bill plus instructions automatically identifies the bill to ma
 test('different instruction dates remain separate outputs while identical filenames are blocked',()=>{
  const previous=bill('p','AB 1982','2026-03-01'),a=amends('a','AB 1982','2026-03-25'),b=amends('b','AB 1982','2026-03-26');let groups=analyzeBatch([previous,a,b]);assert.equal(groups.length,2);assert.ok(groups.every(g=>g.ready));assert.notEqual(groups[0].outputFilename,groups[1].outputFilename);
  b.metadata.date='2026-03-25';groups=analyzeBatch([previous,a,b]);assert.ok(groups.every(g=>!g.ready&&g.issues.some(i=>i.code==='OUTPUT_FILENAME_COLLISION')));
+});
+
+test('same bill month and day in different years explicitly blocks colliding filenames without losing source dates',()=>{
+ const older=bill('p25','AB 1982','2025-03-01'),newer=bill('p26','AB 1982','2026-03-01'),a=amends('a25','AB 1982','2025-03-25'),b=amends('a26','AB 1982','2026-03-25');
+ for(const [previous,instructions]of [[older,a],[newer,b]]){const [group]=analyzeBatch([previous,instructions]);assert.equal(group.ready,true,JSON.stringify(group.issues));assert.equal(group.previous.id,previous.id);}
+ const groups=analyzeBatch([older,newer,a,b],{'amendments:a25':{previousId:'p25'},'amendments:a26':{previousId:'p26'}});
+ assert.equal(groups.length,2);assert.deepEqual(groups.map(g=>g.date),['2025-03-25','2026-03-25']);assert.deepEqual(groups.map(g=>g.dateLabel),['March 25, 2025','March 25, 2026']);assert.deepEqual(groups.map(g=>g.previous.id),['p25','p26']);
+ for(const group of groups){assert.equal(group.outputFilename,'AB 1982 March 25 Amends In.pdf');assert.equal(group.ready,false);assert.equal(group.status,'needs-review');assert.deepEqual(group.issues.map(i=>i.code),['OUTPUT_FILENAME_COLLISION']);}
 });
 
 test('insertion payload dates cannot silently become an amendment-set date',()=>{

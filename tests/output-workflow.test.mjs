@@ -9,7 +9,7 @@ function fixture(){
   lines.push({start:offset,end:offset+value.length,baseline:700-i*20,height:10,left:76,right:76+(value.length-prefix.length)*5,margin:{x:42,y:698-i*20,width:5,height:10,number:i+1,start:offset,end:offset+prefix.length},glyphs});offset+=value.length+1;
  }
  const start=text.indexOf('old wording'),a={number:'1',ready:true,action:'delete',sourceRanges:[{start,end:start+11}]},bad={number:'2',ready:false,action:'insert',issues:[{number:'2',code:'SOURCE_LOCATION_UNRESOLVED',message:'Quoted wording was not found.'}]};
- return {id:'amends:a',entries:[{id:'p',revision:0},{id:'a',revision:0}],assignment:{previousId:'p'},outputFilename:'AB 1 Amends In March 25, 2026.pdf',previous:{doc:{text},pages:[{page:1,view:[0,0,612,792],lines}]},instructions:{id:'a'},plan:{ready:false,amendments:[a,bad]},issues:bad.issues};
+ return {id:'amends:a',entries:[{id:'p',revision:0},{id:'a',revision:0}],assignment:{previousId:'p'},outputFilename:'AB 1 March 25 Amends In.pdf',previous:{doc:{text},pages:[{page:1,view:[0,0,612,792],lines}]},instructions:{id:'a'},plan:{ready:false,amendments:[a,bad]},issues:bad.issues};
 }
 test('a failed amendment is omitted while the complete independently verified mark is exportable',()=>{
  const group=fixture(),before=JSON.stringify(group),out=prepareOutput(group);assert.equal(out.exportable,true);assert.equal(out.partial,true);assert.equal(out.markedCount,1);assert.equal(out.unmarkedCount,1);assert.deepEqual(out.marks.amendments.map(a=>a.number),['1']);assert.equal(out.issues[0].number,'2');assert.equal(JSON.stringify(group),before);

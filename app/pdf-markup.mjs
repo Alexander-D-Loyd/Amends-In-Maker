@@ -2,7 +2,7 @@ import {PDFDocument, StandardFonts, rgb} from './vendor/pdf-lib.esm.js';
 
 export const PDF_MARK_STYLE = Object.freeze({
   yellow: [1, 0.91, 0.12], blue: [0.08, 0.36, 0.82], red: [0.79, 0.12, 0.19],
-  strikeWidth: 1.25, arrowWidth: 1.3, arrowLength: 14, arrowHead: 4, labelHeight: 10, labelFontSize: 6.8,
+  strikeWidth: 1.6, arrowWidth: 1.3, arrowLength: 14, arrowHead: 4, labelHeight: 10, labelFontSize: 6.8,
 });
 const finite = n => Number.isFinite(n);
 const integer = n => Number.isSafeInteger(n);
@@ -26,10 +26,11 @@ const inside = (box, x, y, tolerance = 0.02) => finite(x) && finite(y) && x >= b
 function validRect(rect, box) {
   return rect && [rect.x, rect.y, rect.width, rect.height].every(finite) && rect.width > 0 && rect.height > 0 && inside(box, rect.x, rect.y) && inside(box, rect.x + rect.width, rect.y + rect.height);
 }
+const marginOnly = line => !!line.margin && typeof line.text === 'string' && /^(?:line\s*)?\d+\s*$/iu.test(line.text.trim());
 function requireLine(line, page) {
-  if (!integer(line.start) || !integer(line.end) || line.start < 0 || line.end <= line.start || !finite(line.baseline) || !finite(line.height) || line.height <= 0 || !finite(line.left) || !finite(line.right) || line.right <= line.left) throw Error('A target line has incomplete source geometry.');
+  if (!integer(line.start) || !integer(line.end) || line.start < 0 || line.end <= line.start || !finite(line.baseline) || !finite(line.height) || line.height <= 0 || !marginOnly(line) && (!finite(line.left) || !finite(line.right) || line.right <= line.left)) throw Error('A target line has incomplete source geometry.');
   const box = pageBox(page);
-  if (!inside(box, line.left, line.baseline) || !inside(box, line.right, line.baseline)) throw Error('A target line falls outside the original PDF page.');
+  if (!marginOnly(line) && (!inside(box, line.left, line.baseline) || !inside(box, line.right, line.baseline))) throw Error('A target line falls outside the original PDF page.');
   if (line.margin && !validRect(line.margin, box)) throw Error('A printed margin number has incomplete source geometry.');
   return box;
 }
@@ -81,7 +82,7 @@ function marginMark(line, page) {
   if (n === null) throw Error('The printed margin-line number is unreadable.');
   const m = line.margin, pad = 1.1;
   const rect = {x: Math.max(box.x, m.x - pad), y: Math.max(box.y, m.y - pad), width: Math.min(box.x + box.width, m.x + m.width + pad) - Math.max(box.x, m.x - pad), height: Math.min(box.y + box.height, m.y + m.height + pad) - Math.max(box.y, m.y - pad)};
-  if (!validRect(rect, box) || rect.x + rect.width >= line.left - 0.25) throw Error('A margin highlight would overlap bill text.');
+  if (!validRect(rect, box) || !marginOnly(line) && rect.x + rect.width >= line.left - 0.25) throw Error('A margin highlight would overlap bill text.');
   return {page: page.page, lineNumber: n, sourceLineStart: line.start, rect};
 }
 function markerFor(line, page, number, key = '') {
@@ -109,7 +110,34 @@ function insertionPoint(offset, rows) {
   if (length < 3.2) throw Error('The original line spacing leaves no clear space for the insertion arrow.');
   return {line, page, insertion: {page: page.page, x: round(x), y: round(tipY), direction: 'up', length: round(length)}};
 }
+const rectanglesOverlap = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+function arrowPaintRectangles(insertion) {
+  const pad = PDF_MARK_STYLE.arrowWidth / 2;
+  return arrowSegments(insertion).map(([x1, y1, x2, y2]) => ({page:insertion.page, x:Math.min(x1,x2)-pad, y:Math.min(y1,y2)-pad, width:Math.abs(x2-x1)+2*pad, height:Math.abs(y2-y1)+2*pad}));
+}
+function marginLineInsertion(location, rows, offset) {
+  if (!integer(location?.page) || location.page < 1 || !integer(location.line) || location.line < 1 || !['above', 'below'].includes(location.position)) throw Error('A line-relative insertion needs a page, printed line number and above/below position.');
+  const matches = rows.filter(r => r.page.page === location.page && lineNumber(r.line) === location.line && r.line.margin);
+  if (matches.length !== 1) throw Error('The referenced printed margin number must be present and unique on its page.');
+  const target = matches[0], {line, page} = target, box = requireLine(line, page), m = line.margin;
+  if (offset !== undefined) {
+    const first = lineGlyphs(line).find(g => !/^\s+$/u.test(g.text ?? '')), beginning = first?.start ?? line.end;
+    if (!integer(offset) || location.position === 'below' && offset !== line.end || location.position === 'above' && (offset < (m.end ?? line.start) || offset > beginning)) throw Error('The insertion offset disagrees with its referenced printed margin line.');
+  }
+  const center = r => r.line.margin.y + r.line.margin.height / 2, current = center(target), sign = location.position === 'above' ? 1 : -1;
+  const neighbor = rows.filter(r => r.page.page === page.page && r.line !== line && r.line.margin && sign * (center(r) - current) > 0).sort((a, b) => Math.abs(center(a) - current) - Math.abs(center(b) - current))[0];
+  if (neighbor && sign * (neighbor.line.start - line.start) >= 0) throw Error('The printed line order does not match its original page positions.');
+  const halfHead = 2.6 + PDF_MARK_STYLE.arrowWidth / 2, y = neighbor ? (current + center(neighbor)) / 2 : current + sign * (m.height / 2 + halfHead + 1.5);
+  if (y - halfHead < box.y + 1 || y + halfHead > box.y + box.height - 1) throw Error('The page has no clear margin space on the requested side of this printed line.');
+  const bodyLeft = marginOnly(line) ? Math.min(box.x + box.width, ...rows.filter(r => r.page.page === page.page && !marginOnly(r.line) && finite(r.line.left) && r.line.left > m.x + m.width).map(r => r.line.left)) : line.left;
+  const x = Math.min(m.x + m.width + 7, bodyLeft - 3), length = Math.min(PDF_MARK_STYLE.arrowLength, x - m.x);
+  if (length < 5 || !inside(box, x - length, y) || !inside(box, x, y)) throw Error('The printed margin has no clear space for this insertion arrow.');
+  const insertion = {page:page.page, x:round(x), y:round(y), direction:'right', length:round(length), lineInsertion:{...location}};
+  if (arrowPaintRectangles(insertion).some(rect => rows.some(r => r.page.page === page.page && r.line.margin && rectanglesOverlap(rect,r.line.margin)))) throw Error('The requested margin gap is too tight for an insertion arrow without crossing a printed number.');
+  return {...target, insertion};
+}
 function normalizedLabels(amendments, pages) {
+  const arrowRects = amendments.flatMap(a => a.insertions.filter(i => i.lineInsertion).flatMap(arrowPaintRectangles));
   const grouped = new Map();
   for (const amendment of amendments) for (const marker of amendment.markers) {
     const key = marker.page + ':' + marker.key;
@@ -121,7 +149,7 @@ function normalizedLabels(amendments, pages) {
     const page = pages.find(p => p.page === item.page), box = pageBox(page), text = [...item.numbers].sort((a, b) => Number(a) - Number(b)).join(',');
     const width = Math.max(10, text.length * 3.8 + 4), height = PDF_MARK_STYLE.labelHeight;
     let x = item.right - width, y = item.y - height / 2;
-    while (labels.some(r => r.page === item.page && x < r.x + r.width + 2 && x + width + 2 > r.x && y < r.y + r.height + 1 && y + height + 1 > r.y)) x -= width + 3;
+    while (labels.some(r => r.page === item.page && x < r.x + r.width + 2 && x + width + 2 > r.x && y < r.y + r.height + 1 && y + height + 1 > r.y) || arrowRects.some(r => r.page === item.page && rectanglesOverlap({x,y,width,height},r))) x -= width + 3;
     if (x < item.minX || !inside(box, x, y) || !inside(box, x + width, y + height)) throw Error('Overlapping amendment numbers cannot fit in the original blank margin.');
     labels.push({page: item.page, text, numbers: [...item.numbers], x: round(x), y: round(y), width: round(width), height});
   }
@@ -162,6 +190,12 @@ export function buildPdfMarks({plan, previous} = {}) {
             const patchRows = touched.filter(({line}) => (patch.sourceRanges || []).some(range => overlaps(line, range)));
             const seenPages = new Set();for (const row of patchRows) if (!seenPages.has(row.page.page)) {markerRows.push(row);seenPages.add(row.page.page);}
           }
+        } else if (amendment.lineInsertion) {
+          const insertions = amendment.insertions?.length ? amendment.insertions : amendment.insertion ? [amendment.insertion] : [];
+          if (insertions.length > 1 || insertions.some(i => i.lineInsertion && JSON.stringify(i.lineInsertion) !== JSON.stringify(amendment.lineInsertion))) throw Error('A line-relative insertion has conflicting source locations.');
+          const found = marginLineInsertion(amendment.lineInsertion, rows, insertions[0]?.offset);
+          mark.insertions.push(found.insertion);touched.push(found);
+          const marker = markerFor(found.line, found.page, number, 'edge:' + amendment.lineInsertion.position + ':' + found.line.start);marker.y = found.insertion.y;mark.markers.push(marker);
         } else if (amendment.between) {
           const {page: pageNumber, above, below} = amendment.between;
           if (!integer(pageNumber) || !integer(above) || !integer(below) || below !== above + 1) throw Error('A between-line insertion needs consecutive printed margin numbers.');
@@ -185,7 +219,7 @@ export function buildPdfMarks({plan, previous} = {}) {
           if ((page.rotation ?? 0) % 360 !== 0) throw Error('Rotate this PDF to an upright source copy before placing amendment marks.');
           const margin = marginMark(line, page);if (margin) mark.margin.push(margin);
         }
-        if (!amendment.between) for (const {line, page} of [...new Map(markerRows.map(r => [r.page.page + ':' + r.line.start, r])).values()]) mark.markers.push(markerFor(line, page, number));
+        if (!amendment.between && !amendment.lineInsertion) for (const {line, page} of [...new Map(markerRows.map(r => [r.page.page + ':' + r.line.start, r])).values()]) mark.markers.push(markerFor(line, page, number));
         if (!mark.markers.length) throw Error('The amendment has no safe location for its printed number.');
         amendments.push(mark);
       } catch (error) {issues.push('Amendment ' + number + ': ' + error.message);}

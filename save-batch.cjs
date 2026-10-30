@@ -2,8 +2,10 @@
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {canonicalOutputDirectory}=require('./output-settings.cjs');
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const filenamePattern=new RegExp('^(AB|SB) ([1-9]\\d*) Amends In ('+MONTHS.join('|')+') ([1-9]|[12]\\d|3[01]), ([1-9]\\d{3})\\.pdf$','u');
-function safeName(name){if(typeof name!=='string'||name.length>180||/[<>:"/\\|?*\x00-\x1f\x7f]/u.test(name)||path.basename(name)!==name)return false;const match=filenamePattern.exec(name);if(!match)return false;const year=Number(match[5]),month=MONTHS.indexOf(match[3]),day=Number(match[4]),date=new Date(Date.UTC(year,month,day));return date.getUTCFullYear()===year&&date.getUTCMonth()===month&&date.getUTCDate()===day;}
+const filenamePattern=new RegExp('^(AB|SB) ([1-9]\\d*) ('+MONTHS.join('|')+') ([1-9]|[12]\\d|3[01]) Amends In\\.pdf$','u');
+// A filename omits the year, so February 29 remains a valid month/day.
+function validMonthDay(month,day){const date=new Date(Date.UTC(2000,month,day));return date.getUTCMonth()===month&&date.getUTCDate()===day;}
+function safeName(name){if(typeof name!=='string'||name.length>180||/[<>:"/\\|?*\x00-\x1f\x7f]/u.test(name)||path.basename(name)!==name)return false;const match=filenamePattern.exec(name);return !!match&&validMonthDay(MONTHS.indexOf(match[3]),Number(match[4]));}
 async function savePdfBatch({folder,files},{authorizedFolders=new Set()}={}){
  if(typeof folder!=='string'||!Array.isArray(files)||files.length<1||files.length>200)throw Error('Choose an output folder and 1 to 200 marked PDFs.');
  const canonical=await canonicalOutputDirectory(folder);if(!authorizedFolders.has(canonical))throw Error('Choose the output folder in this application before saving.');

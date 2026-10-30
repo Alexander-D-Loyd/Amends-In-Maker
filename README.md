@@ -22,11 +22,11 @@ SB 879 March 26, 2026 AMENDS.pdf
 
 Example output:
 
-`AB 1982 Amends In March 25, 2026.pdf`
+`AB 1982 March 25 Amends In.pdf`
 
 Bill numbers and document roles are matched from filenames, with source conflicts reported for review. A single matching bill is automatically the PDF to mark. Multiple versions require a clear previous-version filename, an instruction heading identifying the prior edition, a unique dated prior bill, or a manual selection. Version counters alone do not establish chronology.
 
-An incomplete amendment date can use a unique evidenced year from the same bill's source dates. Conflicting or unavailable dates require confirmation under **Adjust bill, amendment date or source file**. File download/modification times are never used.
+Saved filenames include the month and day, without the year. Full dates remain available internally for matching the correct bill and amendment set. An incomplete amendment date can use a unique evidenced year from the same bill's source dates. Conflicting or unavailable dates require confirmation under **Adjust bill, amendment date or source file**. File download/modification times are never used. Sets for the same bill and month/day in different years must be processed separately into different output folders because their output names match.
 
 Existing output files are skipped, never overwritten. Duplicate uploads are detected. Changing folders saves pending outputs there; repeated processing does not silently rewrite completed files.
 
@@ -35,8 +35,11 @@ Existing output files are skipped, never overwritten. Duplicate uploads are dete
 - Affected printed margin line numbers are highlighted yellow, with a small circled amendment number beside them.
 - **Insert after:** a small blue arrow at the exact insertion point.
 - **Insert between lines:** a blue arrow between the two printed margin numbers, highlighting both numbers.
+- **Above / below a line:** a blue arrow above or below the referenced printed margin number, highlighting only that number. This works above the first line and below the last line, without requiring another printed number. Before-line and after-line instructions use the same placement.
 - **Strike:** a red line through the complete strikeout, including wrapped lines.
 - **Strike and insert:** a blue line through the complete strikeout, with no arrowhead.
+
+Red and blue strikeout lines are moderately thicker for visibility while leaving the wording readable. Exact author and coauthor removals in the bill heading are marked through the requested names, including wrapped rows. Explicit, unambiguous author-role deletions worded as title instructions can also resolve to the identified author heading; ambiguous or name-only title references remain held for review.
 
 The previous PDF's original words, pages, layout and existing marks are preserved. Inserted payload text is not placed in comment boxes. The numbered markers connect the location to the original amendment instruction. The popup's broad yellow instruction highlight is for review only and is not added to the output bill.
 
@@ -51,7 +54,7 @@ Use **Review files** to correct a filename's labels or remove a file before supp
 Additional limits:
 
 - Missing supplemental drafting material or a replacement Digest may prevent marking an instruction.
-- Between-line arrows need both real consecutive printed numbers.
+- Between-line arrows need both real consecutive printed numbers, except a verified final-line insertion can use the last actual number. Above/below instructions need the one referenced real printed number and clear margin space on the requested side.
 - Rotated target pages, missing glyph positions and partial OCR-word selections need a readable upright source.
 - An unnumbered heading/title may receive a numbered marker without an invented margin highlight.
 - Each PDF is limited to 50 MB and 1,500 pages. Large batches depend on available memory.

@@ -23,14 +23,14 @@ export async function readPdfFile(file,{onProgress=()=>{},signal,kindHint}={}){
  if(!file||typeof file.arrayBuffer!=='function'||!/^.*\.pdf$/i.test(file.name||''))throw Error('Choose a PDF file.');
  if(file.size>50*1024*1024)throw Error('This PDF exceeds the 50 MB limit.');
  check(signal);const bytes=new Uint8Array(await file.arrayBuffer());check(signal);
- const task=pdfjs.getDocument({data:bytes.slice(),...options()}),pages=[],rawPages=[],strikes=[],formatting=[],scanQuality=[],readingProblems=[],jrBoxes=[];let pdf,ocr=null,pageOffset=0,instruction=false,ignoredFromPage=null,endMarkerPage=null,hasOcr=false;
+ const task=pdfjs.getDocument({data:bytes.slice(),...options()}),pages=[],rawPages=[],strikes=[],formatting=[],scanQuality=[],readingProblems=[],jrBoxes=[],marginState={columns:[]};let pdf,ocr=null,pageOffset=0,instruction=false,ignoredFromPage=null,endMarkerPage=null,hasOcr=false;
  try{
   pdf=await task.promise;if(pdf.numPages>1500)throw Error('This PDF exceeds the 1,500-page limit.');
   for(let n=1;n<=pdf.numPages;n++){
    check(signal);onProgress({page:n,total:pdf.numPages,message:'Reading page '+n+' of '+pdf.numPages});const page=await pdf.getPage(n),content=await page.getTextContent(),operators=await page.getOperatorList(),fontStyles={...content.styles};
    for(const name of Object.keys(fontStyles))try{fontStyles[name]=pdfFontStyle(fontStyles[name],page.commonObjs.get(name));}catch{}
    if(n===1)instruction=isInstruction(content.items.map(i=>i.str||'').join('\n'),file.name,kindHint);
-   let items=instruction?printedAmendmentItems(content.items,fontStyles,page.view[2]-page.view[0],page.view[3]-page.view[1]):labelScannedBillMargins(content.items,page.view[2]-page.view[0]);
+   let items=instruction?printedAmendmentItems(content.items,fontStyles,page.view[2]-page.view[0],page.view[3]-page.view[1]):labelScannedBillMargins(content.items,page.view[2]-page.view[0],marginState);
    if(instruction&&Object.values(fontStyles).some(isOcrStyle)){const words=await ocrWords();check(signal);items=items.map(item=>typeof item.str==='string'&&isOcrStyle(fontStyles[item.fontName])?{...item,str:repairOcrSpacing(item.str,words)}:item);}
    let layout=extractPageLayout(items,operators,pdfjs.OPS,fontStyles,page.view[2]-page.view[0]);markJrBoxGeometry(layout,operators,pdfjs.OPS);
    const scanned=Object.values(fontStyles).some(isOcrStyle)||!layout.text.trim()&&hasVisiblePdfContent(operators,pdfjs.OPS)||largeRasterCoverage(operators,pdfjs.OPS,page.view[2]-page.view[0],page.view[3]-page.view[1],page.view)>=.35&&(instruction?layout.text.replace(/\s/gu,'').length<300:true);

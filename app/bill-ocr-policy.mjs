@@ -1,9 +1,33 @@
 // Structural OCR labels are inferred only from a repeated, consecutive margin
 // column. They are internal layout markers, never inferred legislative words.
-export function labelScannedBillMargins(items,width){
+const median=values=>{const sorted=[...values].sort((a,b)=>a-b),at=Math.floor(sorted.length/2);return sorted.length%2?sorted[at]:(sorted[at-1]+sorted[at])/2;};
+function confirmedColumn(run,width){
+ const height=median(run.map(r=>r.n.height)),steps=run.slice(1).map((r,i)=>run[i].y-r.y),cadence=median(steps);
+ if(!Number.isFinite(width)||width<=0||!Number.isFinite(height)||height<=0||!Number.isFinite(cadence)||cadence<height*.75||cadence>height*3||steps.some(step=>Math.abs(step-cadence)>Math.max(2,cadence*.12)))return null;
+ return {width,right:median(run.map(r=>r.right)),bodyLeft:median(run.map(r=>r.body[0].transform[4])),height,cadence,evidenceRows:run.length};
+}
+function matchesColumn(row,column,width){
+ return column.width===width&&column.evidenceRows>=4&&[column.right,column.bodyLeft,column.height,column.cadence].every(Number.isFinite)&&column.height>0&&column.cadence>0&&Math.abs(row.right-column.right)<2&&Math.abs(row.body[0].transform[4]-column.bodyLeft)<2&&Math.abs(row.n.height-column.height)<=Math.max(1,column.height*.12);
+}
+export function labelScannedBillMargins(items,width,state=null){
+ const priorColumns=Array.isArray(state?.columns)?[...state.columns]:[];
  const rows=[];for(const item of items){if(!item.str?.trim())continue;let row=rows.find(r=>Math.abs(r.y-item.transform[5])<2);if(!row){row={y:item.transform[5],items:[]};rows.push(row);}row.items.push(item);}
- const candidates=rows.map(r=>{const [n,...body]=r.items.sort((a,b)=>a.transform[4]-b.transform[4]);const text=body.map(w=>w.str).join(' ');return {n,body,text,y:r.y,right:n.transform[4]+n.width};}).filter(r=>/^(?:[1-9]|[1-9]\d)$/u.test(r.n.str)&&r.n.transform[4]<width*.16&&r.body.length&&r.body[0].transform[4]-r.right>=Math.max(18,r.n.height*1.2)&&r.text.length>=15&&/\p{L}/u.test(r.text)).sort((a,b)=>b.y-a.y);
- const selected=new Set();for(const first of candidates){const peers=candidates.filter(r=>Math.abs(r.right-first.right)<2&&Math.abs(r.body[0].transform[4]-first.body[0].transform[4])<8);let run=[];for(const row of peers){if(run.length&&Number(row.n.str)!==Number(run.at(-1).n.str)+1){if(run.length>=4)run.forEach(r=>selected.add(r.n));run=[];}run.push(row);}if(run.length>=4)run.forEach(r=>selected.add(r.n));}
+ const possible=rows.map(r=>{const [n,...body]=r.items.sort((a,b)=>a.transform[4]-b.transform[4]);const text=body.map(w=>w.str).join(' ');return {n,body,text,y:r.y,right:n.transform[4]+n.width};}).filter(r=>/^(?:[1-9]|[1-9]\d)$/u.test(r.n.str)&&r.n.transform[4]<width*.16&&r.body.length&&r.body[0].transform[4]-r.right>=Math.max(18,r.n.height*1.2)&&/\p{L}/u.test(r.text)).sort((a,b)=>b.y-a.y);
+ const candidates=possible.filter(r=>r.text.length>=15),selected=new Set();
+ const confirm=run=>{
+  if(run.length<4)return;run.forEach(r=>selected.add(r.n));
+  if(!Array.isArray(state?.columns))return;const column=confirmedColumn(run,width);if(!column)return;
+  const existing=state.columns.find(c=>c.width===column.width&&Math.abs(c.right-column.right)<.01&&Math.abs(c.bodyLeft-column.bodyLeft)<.01&&Math.abs(c.height-column.height)<.01&&Math.abs(c.cadence-column.cadence)<.01);
+  if(existing)existing.evidenceRows=Math.max(existing.evidenceRows,column.evidenceRows);else state.columns.push(column);
+ };
+ for(const first of candidates){const peers=candidates.filter(r=>Math.abs(r.right-first.right)<2&&Math.abs(r.body[0].transform[4]-first.body[0].transform[4])<8);let run=[];for(const row of peers){if(run.length&&Number(row.n.str)!==Number(run.at(-1).n.str)+1){confirm(run);run=[];}run.push(row);}confirm(run);}
+ // Only a previous, fully established column can authorize a sparse page.
+ // Bare numbers alone, blank rows and unrelated numbered prose cannot teach it.
+ for(const column of priorColumns){
+  const short=possible.filter(row=>matchesColumn(row,column,width));if(!short.length||short.length>3)continue;
+  if(short.some((row,i)=>i&&(Number(row.n.str)!==Number(short[i-1].n.str)+1||Math.abs(short[i-1].y-row.y-column.cadence)>Math.max(2,column.cadence*.12))))continue;
+  short.forEach(row=>selected.add(row.n));
+ }
  return items.map(w=>selected.has(w)?{...w,str:'line '+w.str,structuralMargin:true}:w);
 }
 export function billReadingWarnings(doc){

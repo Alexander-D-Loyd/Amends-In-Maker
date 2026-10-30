@@ -1,7 +1,7 @@
 import {externalBillReference,resolveExternalPayload} from './external-amendments.mjs';
 import {digestRule,digestBodyRange,digestPayload,digestSourceDeletionRanges} from './digest-amendment.mjs';
 import {repairOcrDirective} from './ocr-text.mjs';
-import {substantiveTokens} from './core.mjs';
+import {substantiveTokens,activeText} from './core.mjs';
 import {diffArrays} from './vendor/diff/diff/array.js';
 import {sequenceDiff} from './sequence-diff.mjs';
 import {amendmentDiscrepancies} from './amendment-discrepancies.mjs';
@@ -115,7 +115,7 @@ function scopedBlocks(rule,doc){
     blocks=rule.lineStart?found.slice(rule.lineStart-1,rule.lineEnd):found;
   }else{
     if(rule.page)blocks=blocks.filter(b=>b.page===rule.page);
-    if(rule.lineStart && !rule.between && rule.beforeLine===null && rule.afterLine==null){
+    if(rule.lineStart && !rule.between && !rule.relativeLine && rule.beforeLine===null && rule.afterLine==null){
       blocks=blocks.filter(b=>{const n=Number(b.margin.match(/\d+/)?.[0]);return n>=rule.lineStart&&n<=rule.lineEnd;});
       if(!blocks.some(b=>Number(b.margin.match(/\d+/)?.[0])===rule.lineStart)||!blocks.some(b=>Number(b.margin.match(/\d+/)?.[0])===rule.lineEnd))throw Error('The complete printed margin-line range was not found.');
     }
@@ -138,6 +138,30 @@ function choose(matches,rule){
   if(matches.length!==1)throw Error('The source text occurs more than once at this location. Its intended occurrence needs review.');
   return [matches[0]];
 }
+function tokenIndices(tokens,blocks){
+  return tokens.map((token,i)=>blocks.some(b=>token.start>=b.start+b.margin.length && token.start<b.end)&&blocks.some(b=>token.end>b.start+b.margin.length && token.end<=b.end)?i:-1).filter(i=>i>=0);
+}
+function titleAuthorBlocks(rule,doc,titleBlocks,tokens){
+  // "Title" sometimes names the author heading. Accept that usage only for an
+  // exact, role-prefixed author deletion; ordinary title edits keep their scope.
+  if(!rule.title||rule.heading||rule.action!=='delete'||rule.deleteText.length!==1||rule.page||rule.lineStart||rule.lineEnd||rule.anchor||rule.between||rule.beforeLine!=null||rule.afterLine!=null||rule.relativeLine||rule.billEnd||rule.all||rule.occurrence||!/^(?:Assembly\s+Members?|Senators?)\s+\S/i.test(rule.deleteText[0])||!new RegExp(String.raw`^In\s+the\s+title\s*,?\s*(?:strike\s+out|delete|remove)\s+(?:${quotedSource})\s*\.?$`,'i').test(rule.directive))return titleBlocks;
+  const target=phrase(rule.deleteText[0],doc.text),titleMatches=occurrences(tokens,target,tokenIndices(tokens,titleBlocks)),active=activeText(doc),blocks=doc.blocks.filter(b=>!b.ignored),titleStart=titleBlocks[0];
+  const starts=blocks.map((block,index)=>({block,index})).filter(({block})=>!block.margin&&block.page===titleStart.page&&block.start<titleStart.start&&/^Introduced\s+by\b/i.test(active.slice(block.start,block.end).trimStart()));
+  const authorAreas=starts.map(({block,index})=>{
+    const rows=[];
+    for(let i=index;i<blocks.length&&blocks[i].page===block.page&&blocks[i].start<titleStart.start;i++){
+      const body=blocks[i].text.slice(blocks[i].margin.length);
+      if(i>index&&(/^(?:Introduced\s+by\b|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b|An\s+act\b|legislative\s+counsel\b|[AS]B\s+\d+,|The\s+people\b)/i.test(body)||blocks[i].margin))break;
+      rows.push(blocks[i]);
+    }
+    return rows;
+  });
+  const authorMatches=authorAreas.flatMap(rows=>occurrences(tokens,target,tokenIndices(tokens,rows)));
+  if(titleMatches.length&&authorMatches.length)throw Error('The quoted author wording occurs in both the author heading and the An-act title. Its intended location needs review.');
+  if(titleMatches.length)return titleBlocks;
+  if(authorMatches.length&&authorAreas.length!==1)throw Error('The Introduced-by author area is not unique. Confirm the author location before marking it.');
+  return authorMatches.length?authorAreas[0]:titleBlocks;
+}
 function compile(rule,doc){
   if(rule.error)throw Error(rule.error);
   if(rule.digest){
@@ -147,13 +171,13 @@ function compile(rule,doc){
     return [{start:indices[0],end:indices.at(-1)+1,replacement:phrase(rule.insertText,doc.text),sourceOffset:tokens[indices[0]].start,digest:true}];
   }
   if(!rule.title&&(/\bstrike\s+out\s+pages?\s+\d+/i.test(rule.directive)||(rule.directive.match(/\b(?:strike\s+out|delete|remove)\b/gi)||[]).length>1))return compileCompound(rule,doc);
-  const tokens=doc.effectiveTokens||doc.tokens,blocks=scopedBlocks(rule,doc);
-  const indices=tokens.map((token,i)=>blocks.some(b=>token.start>=b.start+b.margin.length && token.start<b.end)&&blocks.some(b=>token.end>b.start+b.margin.length && token.end<=b.end)?i:-1).filter(i=>i>=0);
+  const tokens=doc.effectiveTokens||doc.tokens,blocks=titleAuthorBlocks(rule,doc,scopedBlocks(rule,doc),tokens);
+  const indices=tokenIndices(tokens,blocks);
   const replacement=phrase(rule.insertText,doc.text);
   // Heading/title instructions count their physical text rows, not the
   // enacted body's printed margin numbers. Keep this resolution scoped to
   // the identified heading/title and a single explicit relative line.
-  if(rule.relativeLine||(rule.heading||rule.title)&&(rule.beforeLine!=null||rule.afterLine!=null)){
+  if((rule.heading||rule.title)&&(rule.relativeLine||rule.beforeLine!=null||rule.afterLine!=null)){
     if(rule.action!=='insert'||!(rule.heading||rule.title)||rule.heading&&rule.title||rule.between||rule.anchor)throw Error('A heading/title relative-line instruction must identify one insertion line.');
     const locations=[...rule.directive.matchAll(/\b(?:above|below|before|after)\s+(?:the\s+)?line\s+\d+\b/gi)];
     if(locations.length!==1||blocks.length!==1||!rule.lineStart||rule.lineStart!==rule.lineEnd||rule.page&&rule.page!==blocks[0].page)throw Error('The heading/title insertion line is ambiguous or outside its identified scope.');
@@ -168,8 +192,23 @@ function compile(rule,doc){
   const atFinalLine=block=>block===final&&doc.blocks.filter(b=>b.start>=block.end&&!b.ignored&&!b.runningHead&&(!b.margin||b.text.slice(b.margin.length).trim())).every(b=>/^[-–—]?\s*[0Oo]\s*[-–—]?$/.test(b.text.trim()));
   const afterBlock=block=>{
     const sourceOffset=block.end,next=tokens.findIndex(t=>t.start>=sourceOffset),boundary=next<0?tokens.length:next;
-    return [{start:boundary,end:boundary,replacement,sourceOffset,finalInsertion:atFinalLine(block)}];
+    const printed=/^line\s*(\d+)(?:\s|$)/i.exec(block.margin),line=printed?Number(printed[1]):null;
+    return [{start:boundary,end:boundary,replacement,sourceOffset,finalInsertion:atFinalLine(block),...(Number.isSafeInteger(line)&&line>0?{lineInsertion:{page:block.page,line,position:'below'}}:{})}];
   };
+  if(rule.relativeLine||rule.beforeLine!=null||rule.afterLine!=null){
+    const locations=[...rule.directive.matchAll(/\b(?:above|below|before|after)\s+(?:the\s+)?(?:last\s+)?line\s+(\d+)\b/gi)],pages=[...rule.directive.matchAll(/\bpage\s+(\d+)\b/gi)],lines=[...rule.directive.matchAll(/\blines?\s+(\d+)(?:\s*(?:to|through|and|[-–—])\s*(\d+))?/gi)];
+    const implicitBefore=rule.beforeLine!=null&&!rule.relativeLine&&rule.afterLine==null&&pages.length===0;
+    if(rule.action!=='insert'||rule.title||rule.heading||!implicitBefore&&(!Number.isSafeInteger(rule.page)||rule.page<1)||rule.between||rule.anchor||rule.billEnd||rule.all||commaInsertionAnchor(rule.directive)||periodInsertionAnchor(rule.directive))throw Error('A relative printed-line insertion must specify one page and one line without conflicting source locations.');
+    const line=rule.relativeLine?.line??rule.beforeLine??rule.afterLine,before=rule.relativeLine?rule.relativeLine.position==='above':rule.beforeLine!=null;
+    if(locations.length!==1||pages.length!==(implicitBefore?0:1)||lines.length!==1||!Number.isSafeInteger(line)||line<1||Number(locations[0][1])!==line||Number(lines[0][1])!==line||lines[0][2])throw Error('The relative printed-line insertion combines conflicting or ambiguous page/line locations.');
+    const targets=blocks.filter(b=>(implicitBefore||b.page===rule.page)&&Number(b.margin.match(/\d+/)?.[0])===line);
+    if(targets.length!==1)throw Error('The referenced printed margin line must be present and unique on the specified page.');
+    const target=targets[0];
+    if(/\bafter\s+(?:the\s+)?last\s+line\b/i.test(rule.directive)&&blocks.some(b=>b.page===rule.page&&b.margin&&b.start>target.start))throw Error('The specified last printed margin line is not the last numbered row on its page.');
+    if(!before)return afterBlock(target);
+    const sourceOffset=target.start+target.margin.length,next=tokens.findIndex(t=>t.start>=sourceOffset),boundary=next<0?tokens.length:next;
+    return [{start:boundary,end:boundary,replacement,sourceOffset,lineInsertion:{page:target.page,line,position:'above'}}];
+  }
   const finalPeriod=t=>!!final&&t.value==='.'&&t.start>=final.start+final.margin.length&&t.end<=final.end&&!tokens.some(next=>next.start>=t.end&&next.start<final.end)&&atFinalLine(final);
   const periodAnchor=rule.action==='insert'&&!rule.anchor?periodInsertionAnchor(rule.directive):null;
   const commaAnchor=rule.action==='insert'?commaInsertionAnchor(rule.directive):null;
@@ -194,20 +233,6 @@ function compile(rule,doc){
   if(rule.billEnd){
     if(rule.action!=='insert'||!final||rule.page&&rule.page!==final.page||!atFinalLine(final))throw Error('The final legislative line and end of the bill could not be confirmed.');
     return afterBlock(final);
-  }
-  if(rule.afterLine!=null){
-    if(rule.action!=='insert'||!rule.page)throw Error('An after-line insertion must specify a page and printed margin line.');
-    const targets=blocks.filter(b=>Number(b.margin.match(/\d+/)?.[0])===rule.afterLine);
-    if(targets.length!==1)throw Error('The referenced printed margin line must be present and unique.');
-    return afterBlock(targets[0]);
-  }
-  if(rule.beforeLine!==null){
-    if(rule.action!=='insert'||rule.title||rule.heading)throw Error('A before-line instruction must specify an insertion before a printed margin line.');
-    const targets=blocks.filter(b=>Number(b.margin.match(/\d+/)?.[0])===rule.beforeLine);
-    if(targets.length!==1)throw Error('The referenced printed margin line must be present and unique. Specify its page when the line occurs on multiple pages.');
-    const sourceOffset=targets[0].start+targets[0].margin.length;
-    const next=tokens.findIndex(t=>t.start>=sourceOffset),boundary=next<0?tokens.length:next;
-    return [{start:boundary,end:boundary,replacement,sourceOffset}];
   }
   if(rule.between){
     if(rule.action!=='insert')throw Error('A between-lines instruction must clearly specify an insertion.');

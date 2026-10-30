@@ -18,7 +18,7 @@ export function validDate(value){
 }
 const iso=(year,month,day)=>{const value=String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');return validDate(value)?value:null;};
 export function formatAmendmentDate(value){if(!validDate(value))return '';const [y,m,d]=value.split('-').map(Number);return MONTHS[m-1]+' '+d+', '+y;}
-export function outputFilename(billId,date){const bill=normalizeBillId(billId),label=formatAmendmentDate(date);return bill&&label?bill+' Amends In '+label+'.pdf':'';}
+export function outputFilename(billId,date){const bill=normalizeBillId(billId);if(!bill||!validDate(date))return '';const [,month,day]=date.split('-').map(Number);return bill+' '+MONTHS[month-1]+' '+day+' Amends In.pdf';}
 
 function billCodes(text){
  const found=[];
@@ -140,6 +140,6 @@ export function analyzeBatch(inputEntries,assignments={}){
   groups.push({id:'unclassified:'+entry.id,billId:entry.metadata.billId,date:entry.metadata.date,dateLabel:entry.metadata.dateLabel,outputFilename:'',previous:null,current:null,instructions:null,entries:[entry],status:'needs-review',ready:false,issues:entry.metadata.kind==='digest'?[issue('DIGEST_NOT_INSTRUCTION_SET','A replacement Digest is not an amendment instruction set. Remove it from this batch or correct its file classification.')]:entry.metadata.issues.length?entry.metadata.issues:[issue('CLASSIFICATION_REQUIRED','Confirm this PDF’s bill number and document type.')],plan:null,assignment:{billId:entry.metadata.billId||'',date:entry.metadata.date||'',previousId:'',instructionsId:''}});
  }
  const collisions=new Map();for(const g of groups)if(g.outputFilename){const key=g.outputFilename.toLowerCase();if(!collisions.has(key))collisions.set(key,[]);collisions.get(key).push(g);}
- for(const rows of collisions.values())if(rows.length>1)for(const group of rows){group.ready=false;group.status='needs-review';group.issues.push(issue('OUTPUT_FILENAME_COLLISION','Multiple uploaded instruction sets produce the same bill/date filename. Remove a duplicate set or confirm their distinct amendment dates.'));}
+ for(const rows of collisions.values())if(rows.length>1)for(const group of rows){group.ready=false;group.status='needs-review';group.issues.push(issue('OUTPUT_FILENAME_COLLISION','Multiple instruction sets have the same bill and month/day output name. Remove a duplicate set or process these sets separately into different output folders.'));}
  return groups;
 }

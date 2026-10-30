@@ -90,6 +90,39 @@ test('between-line marks require both unique consecutive printed numbers and cor
   const reversed = structuredClone(base);reversed.pages[0].lines[1].baseline = 710;assert.equal(buildPdfMarks({previous: reversed, plan: plan([{number: 2, action: 'insert', between: {page: 1, above: 1, below: 2}}])}).ready, false);
 });
 
+test('above-first and below-last instructions use one real margin number and the requested side',async()=>{
+ const previous=await fixture(['First provision.','Middle provision.','Final provision.']);previous.doc=makeDocument([previous.doc.text],'Previous');
+ for(const[position,line]of [['above',1],['below',3],['above',2],['below',2]]){
+  const instructions={doc:makeDocument([`Amendment 1\nOn page 1, ${position} line ${line}, insert:\nNew text.\n-0-\nAmendment 99\nIgnored appendix.`],'Amendments')},analyzed=planAmendments({previous,instructions});
+  assert.equal(analyzed.ready,true,JSON.stringify(analyzed.issues));assert.equal(analyzed.amendments.length,1);const marks=buildPdfMarks({previous,plan:analyzed});assert.equal(marks.ready,true,marks.issues.join('\n'));
+  const mark=marks.amendments[0],arrow=mark.insertions[0],source=previous.pages[0].lines[line-1];assert.deepEqual(mark.margin.map(m=>m.lineNumber),[line]);assert.equal(arrow.direction,'right');
+  assert.equal(arrow.lineInsertion.position,position);assert.equal(arrow.lineInsertion.page,1);assert.equal(arrow.lineInsertion.line,line);assert.equal(marks.labels[0].y+marks.labels[0].height/2,arrow.y);
+  const center=source.margin.y+source.margin.height/2;assert.ok(position==='above'?arrow.y>center:arrow.y<center);assert.ok(arrow.x<source.left);await createMarkedPdf({previous,marks});
+ }
+});
+
+test('blank numbered rows support above and below marks without fabricated body glyphs',async()=>{
+ const previous=await fixture(['First provision.','','Final provision.']);previous.doc=makeDocument([previous.doc.text],'Previous');previous.pages[0].lines[1].text='line 2';
+ for(const position of ['above','below']){
+  const analyzed=planAmendments({previous,instructions:{doc:makeDocument([`Amendment 1\nOn page 1, ${position} line 2, insert:\nNew text.`],'Amendments')}}),marks=buildPdfMarks({previous,plan:analyzed});
+  assert.equal(marks.ready,true,JSON.stringify([analyzed.issues,marks.issues]));assert.deepEqual(marks.amendments[0].margin.map(m=>m.lineNumber),[2]);assert.equal(previous.pages[0].lines[1].glyphs.length,0);await createMarkedPdf({previous,marks});
+ }
+});
+
+test('line-relative PDF marks reject missing numbers, conflicting offsets and unavailable page-edge space',async()=>{
+ const previous=await fixture(['First provision.','Final provision.']),location={page:1,line:2,position:'below'},row={number:1,action:'insert',lineInsertion:location,insertion:{offset:previous.pages[0].lines[1].end}};
+ assert.equal(buildPdfMarks({previous,plan:plan([row])}).ready,true);
+ for(const mutate of [r=>r.lineInsertion.line=99,r=>r.lineInsertion.page=2,r=>r.insertion.offset=0]){const broken=structuredClone(row);mutate(broken);assert.equal(buildPdfMarks({previous,plan:plan([broken])}).ready,false);}
+ const cropped=structuredClone(previous);cropped.pages[0].view=[0,675,612,792];assert.equal(buildPdfMarks({previous:cropped,plan:plan([row])}).ready,false);
+});
+
+test('line-relative arrows never cross printed digits or hide under an amendment badge',async()=>{
+ const previous=await fixture(['First provision.','Final provision.']),row={number:1,action:'insert',lineInsertion:{page:1,line:1,position:'below'}};
+ const dense=structuredClone(previous),lower=dense.pages[0].lines[1];lower.baseline=690;lower.margin.y=687.8;assert.equal(buildPdfMarks({previous:dense,plan:plan([row])}).ready,false);
+ const cropped=structuredClone(previous);cropped.pages[0].view=[40,40,587,752];for(const line of cropped.pages[0].lines)line.left=65;assert.equal(buildPdfMarks({previous:cropped,plan:plan([row])}).ready,false);
+ assert.equal(buildPdfMarks({previous,plan:plan([row])}).ready,true);
+});
+
 test('original unnumbered heading targets get a small source badge without invented margin highlights', async () => {
   const previous = await fixture(['An act relating to public reporting.'], {noMargin: true}), target = range(previous, 'public reporting');
   const marks = buildPdfMarks({previous, plan: plan([{number: 2, action: 'delete', sourceRanges: [target]}])});assert.equal(marks.ready, true, marks.issues.join('\n'));assert.deepEqual(marks.amendments[0].margin, []);assert.equal(marks.labels.length, 1);assert.ok(marks.labels[0].x + marks.labels[0].width < 76);
