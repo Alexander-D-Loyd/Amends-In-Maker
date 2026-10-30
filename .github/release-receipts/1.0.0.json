@@ -2,7 +2,7 @@
   "format": "amends-in-maker.verified-release",
   "repository": "Alexander-D-Loyd/Amends-In-Maker",
   "version": "1.0.0",
-  "sourceCommit": "fed60b0c83e3e3569020674f036d520f83dcbd15",
+  "sourceCommit": "f7d99b92ea9fdefb6e563d84bd37dc695164bd3b",
   "tag": "v1.0.0",
   "branch": "main",
   "manifestPath": ".github/release-receipts/1.0.0.package-manifest.json",
