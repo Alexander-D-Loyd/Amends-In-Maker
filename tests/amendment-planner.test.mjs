@@ -34,12 +34,25 @@ test('all source reading disputes, duplicate numbers and missing external drafti
  assert.equal(planAmendments({previous,instructions:ordinary,digest:make('Replacement digest')}).ready,false);
 });
 
-test('current-version discrepancies warn without changing known previous-version marking locations',()=>{
+test('planning does not request or cross-check another bill version',()=>{
  const previous=make('line 1 The period is 30 days.'),current=make('line 1 The period is 31 days.'),inst=instructions('Amendment 1\nOn page 1, in line 1, strike out “30 days” and insert:\n45 days');
- const direct=planAmendments({previous,instructions:inst}),checked=planAmendments({previous,instructions:inst,current});assert.equal(checked.ready,true);assert.deepEqual(checked.amendments,direct.amendments);assert.ok(checked.warnings.some(w=>w.code==='CURRENT_VERSION_DIFFERENCE'));assert.notEqual(checked.verification[0].status,'implemented');
+ current.scanQuality=[{page:1,uncertain:[{start:1,end:2,text:'x'}]}];const direct=planAmendments({previous,instructions:inst}),checked=planAmendments({previous,instructions:inst,current});assert.equal(checked.ready,true);assert.deepEqual(checked,direct);assert.deepEqual(checked.warnings,[]);assert.deepEqual(checked.verification,[]);
+});
+
+test('every overlapping amendment is unready while independent source targets keep their own readiness',()=>{
+ const previous=make('line 1 The obsolete phrase applies.\nline 2 Keep this word.'),entry={id:'instructions-file',doc:instructions('Amendment 7\nOn page 1, in line 1, strike out “obsolete phrase”.\nAmendment 9\nOn page 1, in line 1, strike out “phrase”.\nAmendment 12\nOn page 1, in line 2, after “word” insert:\nnew')};
+ const plan=planAmendments({previous,instructions:entry});assert.equal(plan.ready,false);assert.deepEqual(plan.amendments.map(a=>[a.number,a.ready]),[['7',false],['9',false],['12',true]]);assert.deepEqual(plan.issues.map(i=>i.number),['7','9']);for(const row of plan.amendments){assert.equal(row.source,'instructions');assert.equal(row.entryId,'instructions-file');assert.equal(entry.doc.text.slice(row.instructionStart,row.instructionEnd).startsWith('Amendment '+row.number),true);assert.equal(row.instructionPage,1);}for(const error of plan.issues){const row=plan.amendments.find(a=>a.number===error.number);assert.equal(error.instructionStart,row.instructionStart);assert.equal(error.instructionEnd,row.instructionEnd);}
+});
+
+test('a disputed instruction reading holds the whole bill and links to its original printed amendment',()=>{
+ const previous=make('line 1 The word applies.'),raw='Amendment 4\nOn page 1, in line 1, after “word” insert:\nnew',doc=instructions(raw),start=raw.indexOf('word');doc.scanQuality=[{page:1,uncertain:[{start,end:start+4,text:'word'}]}];const plan=planAmendments({previous,instructions:{id:'i',doc}});assert.equal(plan.ready,false);assert.deepEqual(plan.amendments,[]);assert.equal(plan.issues[0].number,'4');assert.equal(plan.issues[0].source,'instructions');assert.equal(plan.issues[0].entryId,'i');assert.equal(plan.issues[0].instructionStart,0);assert.equal(plan.issues[0].readingStart,start);
 });
 
 test('struck instruction wording cannot become an active requested target',()=>{
  const previous=make('line 1 The word applies.'),raw='Amendment 1\nOn page 1, in line 1, after “word” insert:\nobsolete new',start=raw.indexOf('obsolete');
  const inst=makeDocument([raw],'instructions',[[{start,end:start+8}]]),plan=planAmendments({previous,instructions:inst});assert.equal(plan.ready,true);assert.ok(!plan.amendments[0].insertText.includes('obsolete'));assert.ok(plan.amendments[0].insertText.includes('new'));
+});
+
+test('instruction PDFs with no active amendments produce an explicit global issue',()=>{
+ const previous=make('line 1 The word applies.');for(const inst of [instructions('  \n  '),makeDocument(['Amendment 1\nOn page 1, strike out line 1.'],'instructions',[[{start:0,end:42}]])]){const plan=planAmendments({previous,instructions:inst});assert.equal(plan.ready,false);assert.deepEqual(plan.amendments,[]);assert.ok(plan.issues.some(i=>i.code==='NO_AMENDMENTS_FOUND'&&!i.number),JSON.stringify(plan.issues));}
 });

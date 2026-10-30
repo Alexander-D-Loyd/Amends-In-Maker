@@ -4,43 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Amends In Maker</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Amends In Maker</title><link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="app-header"><div><h1>Amends In Maker</h1><p>Batch amendment markup</p></div><span class="local-note">PDFs stay on this computer</span></header>
+  <header class="app-header"><span class="brand">Amends In Maker</span><span class="local-note">Your PDFs stay on this computer</span></header>
   <main>
-    <section id="drop-zone" class="drop-zone" aria-label="Upload bill and amendment PDFs">
-      <div><h2>Drop bill versions and amendment PDFs together</h2><p>Multiple bills at once. Match files, review the previous-version pages, then create the marked PDFs.</p></div>
-      <button id="choose-files" type="button" disabled>Choose PDFs</button><input id="file-input" type="file" accept=".pdf,application/pdf" multiple hidden>
-    </section>
-    <div id="import-progress" class="import-progress" hidden><div><p id="import-status" role="status"></p><progress id="read-progress" max="1" value="0" aria-label="PDF reading progress"></progress></div><button id="cancel-import" type="button" class="secondary">Cancel remaining files</button></div>
-    <div class="batch-toolbar"><p id="batch-summary" role="status">No files loaded.</p><div><button id="review-files" type="button" class="secondary" disabled>Review file labels</button><button id="clear-batch" type="button" class="secondary" disabled>Clear batch</button></div></div>
-    <section id="import-errors" class="notice error" aria-label="Files that could not be read" hidden><h2>Files that could not be read</h2><ul id="import-error-list"></ul></section>
-    <section id="file-labels" class="file-labels" aria-label="Review file labels" hidden><div class="section-heading"><div><h2>File labels</h2><p>Correct only after checking the original PDF. Dates are document dates, never file download or modification dates.</p></div><button id="close-file-labels" type="button" class="secondary">Close</button></div><div id="file-label-list"></div></section>
-    <div class="workspace">
-      <aside class="batch-sidebar"><div class="sidebar-heading"><h2>Bills to create</h2><label><input id="select-ready" type="checkbox" disabled> Select ready bills</label></div><div id="group-list" class="group-list"><p class="empty-message">Your bills will appear here.</p></div></aside>
-      <section class="review-pane" aria-labelledby="selected-bill">
-        <div id="empty-state" class="empty-state"><h2>Start with your PDF files</h2><p>Load the previous bill, corresponding amendments, and current bill when available. Clear source matches are marked on a copy of the previous PDF.</p><p>Uncertain locations, missing documents and conflicting file labels remain available for review.</p></div>
-        <div id="group-review" hidden>
-          <div class="review-heading"><div><h2 id="selected-bill"></h2><p id="selected-date"></p></div><span id="group-status" class="status-badge"></span></div>
-          <dl id="group-files" class="group-files"></dl>
-          <details id="assignment-details"><summary>Review bill, date and file pairing</summary><form id="assignment-form" class="assignment-form"><label>Bill number<input id="assignment-bill" type="text" placeholder="AB 1982" required maxlength="14"></label><label>Amendment date<input id="assignment-date" type="date" required></label><label>Previous version<select id="assignment-previous" required></select></label><label>Current version for cross-check<select id="assignment-current"></select></label><label class="wide">Amendments<select id="assignment-instructions" required></select></label><p class="form-note wide">Confirm the amendment date and original version from the PDFs. Version numbers alone do not establish chronology.</p><button type="submit">Apply file pairing</button></form></details>
-          <section id="group-issues" class="notice warning" aria-label="Source review and cross-check notes" hidden><h3 id="group-issues-title">This bill needs review</h3><ul id="group-issue-list"></ul></section>
-          <details id="reading-review" class="reading-review" hidden><summary id="reading-review-count">Review PDF readings</summary><p class="form-note">Compare each reading with the original page. Confirm unchanged wording or correct it before creating a marked PDF.</p><div id="reading-review-list"></div></details>
-          <div class="preview-toolbar"><form id="page-form" class="page-navigation"><button id="previous-page" type="button" class="secondary" aria-label="Previous PDF page">←</button><label for="page-number">Page</label><input id="page-number" type="number" min="1" step="1" value="1"><span>of <span id="page-total">0</span></span><button id="next-page" type="button" class="secondary" aria-label="Next PDF page">→</button></form><div class="preview-options"><label>Source<select id="preview-source"></select></label><label>View<select id="preview-mode"><option value="marked">Amendment marks</option><option value="original">Original PDF</option></select></label><label>Zoom<select id="preview-zoom"><option value="fit">Fit width</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label></div></div>
-          <div class="mark-legend"><span><i class="key yellow"></i>Margin number</span><span><i class="key blue"></i>Insert / strike and insert</span><span><i class="key red"></i>Strike</span><span>Circled number = amendment</span></div>
-          <p id="preview-status" class="preview-status" role="status"></p>
-          <div id="canvas-scroll" class="canvas-scroll"><canvas id="preview-canvas" aria-label="Previous-version PDF with amendment marks"></canvas></div>
-          <details id="amendment-list-details" class="amendment-list-details"><summary id="amendment-count">Amendments</summary><div id="amendment-list"></div></details>
-        </div>
+    <section id="home" class="home">
+      <p class="eyebrow">AMENDMENT MARKUP</p><h1>Drop your files. Get your Amends In PDFs.</h1>
+      <p class="intro">Add the bill PDFs to mark and their amendment instructions. We’ll match the bill numbers in the filenames and save a marked copy for each amendment date.</p>
+      <section id="drop-zone" class="drop-zone" aria-label="Drop bill and amendment PDFs">
+        <span class="drop-icon" aria-hidden="true">↓</span><h2>Drop bill and amendment PDFs here</h2>
+        <p>Several bills at once. Only the bill version to mark and its amendments are needed.</p>
+        <button id="choose-files" type="button" disabled>Choose PDFs</button><input id="file-input" type="file" accept=".pdf,application/pdf" multiple hidden>
+        <p class="filename-example">For example: AB 1982 v99.pdf + AB 1982 March 25, 2026 AMENDS.pdf</p>
       </section>
-    </div>
-    <section class="export-bar" aria-label="Create marked PDFs"><div class="export-info"><h2>Output</h2><p id="output-filename">Amends In [Bill Number] [Amendment Date].pdf</p><p class="small-note">One new PDF per selected bill and amendment date. Original files remain unchanged.</p></div><div class="export-actions"><button id="output-folder" type="button" class="secondary" disabled>Choose output folder</button><span id="output-folder-name">Choose a folder when ready.</span><button id="create-pdfs" type="button" disabled>Create PDFs</button></div></section>
+      <section class="folder-bar" aria-label="Output folder"><div><h2>Save marked PDFs to</h2><p id="output-folder-name">Choose a folder when you add your first batch.</p><p class="small-note">This folder is remembered. You can change it at any time.</p></div><button id="output-folder" type="button" class="secondary" disabled>Choose folder</button></section>
+    </section>
+    <section id="import-progress" class="progress-panel" hidden><p id="import-status" role="status"></p><progress id="read-progress" max="1" value="0"></progress><button id="cancel-import" type="button" class="secondary">Cancel remaining files</button></section>
     <p id="app-status" class="app-status" role="status" aria-live="polite"></p>
-    <section id="save-results" class="notice" aria-labelledby="save-results-title" hidden><h2 id="save-results-title">PDF creation results</h2><ul id="save-result-list"></ul></section>
+    <section id="batch-results" hidden aria-labelledby="results-title">
+      <div class="section-heading"><div><h2 id="results-title">Your batch</h2><p id="batch-summary"></p></div><div class="actions"><button id="review-files" class="secondary" type="button">Review files</button><button id="retry-output" class="secondary" type="button">Retry pending PDFs</button><button id="clear-batch" class="secondary" type="button">Clear batch</button></div></div>
+      <div id="attention-notice" class="notice warning" hidden><div><h3 id="attention-title"></h3><p>Open an issue to see its amendment in the original PDF. PDFs with unresolved marks are identified below.</p></div><button id="review-issues" class="secondary" type="button">Review issues</button></div>
+      <div id="group-list" class="group-list"></div>
+      <section id="import-errors" class="notice error" hidden><h3>Files that could not be read</h3><ul id="import-error-list"></ul></section>
+    </section>
+    <section id="file-labels" class="file-labels" hidden aria-labelledby="file-labels-title"><div class="section-heading"><div><h2 id="file-labels-title">Uploaded files</h2><p>Use these controls if a filename is incomplete or a file needs to be replaced.</p></div><button id="close-file-labels" type="button" class="secondary">Close</button></div><div id="file-label-list"></div></section>
   </main>
-  <footer class="app-footer"><span>Amends In Maker</span><span>Uncertain readings and unresolved amendments require source review.</span></footer>
+  <footer>Original PDFs stay unchanged. Existing output files are skipped.</footer>
+  <dialog id="issue-dialog" aria-labelledby="issue-title">
+    <div class="dialog-heading"><div><p id="issue-bill" class="eyebrow"></p><h2 id="issue-title">Amendment needs attention</h2></div><button id="close-issue" class="secondary" type="button" aria-label="Close issue">Close</button></div>
+    <p id="issue-reason" class="notice warning"></p><p id="issue-source" class="small-note"></p><div id="issue-reading"></div>
+    <div class="dialog-toolbar"><div class="actions"><button id="issue-previous-page" class="secondary" type="button" aria-label="Previous PDF page">←</button><span id="issue-page-label"></span><button id="issue-next-page" class="secondary" type="button" aria-label="Next PDF page">→</button></div><span id="issue-highlight-note"></span></div>
+    <div id="issue-pdf-scroll" class="pdf-scroll"><canvas id="issue-canvas" aria-label="Original amendment PDF with the issue highlighted"></canvas></div><p id="issue-pdf-status" class="small-note" role="status"></p>
+    <div class="dialog-footer"><div class="actions"><button id="previous-issue" class="secondary" type="button">Previous issue</button><span id="issue-position"></span><button id="next-issue" class="secondary" type="button">Next issue</button></div><button id="issue-add-files" type="button">Add missing or replacement PDFs</button></div>
+  </dialog>
+  <dialog id="preview-dialog" aria-labelledby="preview-title"><div class="dialog-heading"><h2 id="preview-title">Marked PDF</h2><button id="close-preview" type="button" class="secondary">Close</button></div><div class="dialog-toolbar"><button id="preview-previous" type="button" class="secondary">← Previous page</button><span id="preview-page-label"></span><button id="preview-next" type="button" class="secondary">Next page →</button></div><div id="preview-scroll" class="pdf-scroll"><canvas id="preview-canvas" aria-label="Marked output PDF"></canvas></div><p id="preview-status" role="status"></p></dialog>
   <script type="module" src="app.mjs"></script>
 </body>
 </html>

@@ -18,7 +18,7 @@ export function validDate(value){
 }
 const iso=(year,month,day)=>{const value=String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');return validDate(value)?value:null;};
 export function formatAmendmentDate(value){if(!validDate(value))return '';const [y,m,d]=value.split('-').map(Number);return MONTHS[m-1]+' '+d+', '+y;}
-export function outputFilename(billId,date){const bill=normalizeBillId(billId),label=formatAmendmentDate(date);return bill&&label?'Amends In '+bill+' '+label+'.pdf':'';}
+export function outputFilename(billId,date){const bill=normalizeBillId(billId),label=formatAmendmentDate(date);return bill&&label?bill+' Amends In '+label+'.pdf':'';}
 
 function billCodes(text){
  const found=[];
@@ -45,14 +45,15 @@ export function classifyEntry(entry){
  let billId=null;
  if(own(manual,'billId')){billId=normalizeBillId(manual.billId);if(!billId)issues.push(issue('BILL_ID_INVALID','Enter a bill identifier such as AB 1982 or SB 879.'));}
  else{
-  const candidates=[...new Set([...headerIds,...nameIds,...(explicit?[explicit]:[])])];if(candidates.length===1)billId=candidates[0];else if(candidates.length>1)issues.push(issue('BILL_ID_CONFLICT','The filename and source heading identify different bills. Confirm the bill before grouping this file.'));else issues.push(issue('BILL_ID_REQUIRED','The bill number could not be read. Choose its bill identifier.'));
+  const candidates=[...new Set([...nameIds,...headerIds,...(explicit?[explicit]:[])])];billId=nameIds.length===1?nameIds[0]:candidates.length===1?candidates[0]:null;if(candidates.length>1)issues.push(issue('BILL_ID_CONFLICT','The filename and source heading identify different bills. Confirm the bill before grouping this file.'));else if(!billId)issues.push(issue('BILL_ID_REQUIRED','The bill number could not be read. Choose its bill identifier.'));
  }
  let kind='unknown';
  if(own(manual,'kind')){if(KIND.has(manual.kind))kind=manual.kind;else issues.push(issue('DOCUMENT_KIND_INVALID','Choose Bill, Amendments, Digest, or Unclassified.'));}
- else if(KIND.has(meta.kind)&&meta.kind!=='unknown')kind=meta.kind;
  else{
   const amendmentHeading=/(?:^|\n)\s*Amendment\s*\d+\s*(?:\n|$)/i.test(firstPage)||headerLines.some(l=>/^\s*(?:PROPOSED\s*)?AMENDMENTS?\s*TO/i.test(l)),amendmentName=/\b(?:amends|amendments?|instructions?)\b/i.test(name.replaceAll('_',' ')),digestName=/\bdigest\b/i.test(name),billHeading=headerLines.some(l=>/^\s*(?:(?:ASSEMBLY|SENATE)\s*BILL(?=\s|NO\.?|$)|[AS]B\s*\d)/i.test(l));
-  if(digestName)kind='digest';else if(amendmentHeading||amendmentName)kind='amendments';else if(billHeading)kind='bill';else if(KIND.has(meta.kindHint)&&meta.kindHint!=='unknown')kind=meta.kindHint;else if(/\bv\d{1,4}\b/i.test(name)&&billId)kind='bill';
+  const namedKind=digestName?'digest':amendmentName?'amendments':null,headingKind=amendmentHeading?'amendments':billHeading?'bill':null;
+  kind=namedKind||headingKind||(KIND.has(meta.kind)&&meta.kind!=='unknown'?meta.kind:null)||(KIND.has(meta.kindHint)&&meta.kindHint!=='unknown'?meta.kindHint:null)||(nameIds.length===1?'bill':'unknown');
+  if(namedKind&&headingKind&&namedKind!==headingKind||namedKind&&KIND.has(meta.kind)&&meta.kind!=='unknown'&&namedKind!==meta.kind)issues.push(issue('DOCUMENT_KIND_CONFLICT','The filename and source identify different document types. Confirm this file’s type.'));
  }
  if(kind==='unknown')issues.push(issue('DOCUMENT_KIND_REQUIRED','Choose whether this file is a bill version or instructional amendments.'));
  const instructionStart=firstPage.search(/(?:^|\n)\s*(?:Amendment\s*\d+\b|On\s+page\s*\d+\b|In\s+the\s+(?:title|heading)\b)/i);
@@ -81,20 +82,25 @@ export function classifyEntry(entry){
 function completePartialDates(entries){
  return entries.map(entry=>{
   const m=entry.metadata;if(m.kind!=='amendments'||m.date||!m.dateParts||!m.billId)return entry;
-  const part=m.dateParts,matching=[...new Set(entries.filter(e=>e.metadata.billId===m.billId&&e.metadata.kind==='bill'&&validDate(e.metadata.date)).map(e=>e.metadata.date).filter(d=>{const [y,mo,day]=d.split('-').map(Number);return mo===part.month&&day===part.day&&(part.shortYear===undefined||y%100===part.shortYear);}))];
-  if(matching.length!==1)return entry;const date=matching[0];return {...entry,metadata:{...m,date,dateLabel:formatAmendmentDate(date),dateSource:'matching-bill-cover-date',issues:m.issues.filter(i=>i.code!=='AMENDMENT_DATE_REQUIRED')}};
+  const part=m.dateParts,billDates=entries.filter(e=>e.metadata.billId===m.billId&&e.metadata.kind==='bill'&&validDate(e.metadata.date)).map(e=>e.metadata.date),matching=[...new Set(billDates.filter(d=>{const [y,mo,day]=d.split('-').map(Number);return mo===part.month&&day===part.day&&(part.shortYear===undefined||y%100===part.shortYear);}))];
+  const productionYears=(m.productionDateParts||[]).map(p=>p.date?+p.date.slice(0,4):null).filter(Boolean),years=[...new Set([...billDates,...(validDate(m.sourceVersionDate)?[m.sourceVersionDate]:[])].map(d=>+d.slice(0,4)).concat(productionYears))];
+  const shortYears=[...new Set([part.shortYear,...(m.productionDateParts||[]).map(p=>p.shortYear)].filter(y=>y!==undefined))];
+  const compatibleYears=years.filter(y=>shortYears.every(short=>y%100===short));
+  const date=matching.length===1&&shortYears.every(short=>+matching[0].slice(0,4)%100===short)?matching[0]:matching.length===0&&compatibleYears.length===1?iso(compatibleYears[0],part.month,part.day):null;
+  if(!date)return entry;return {...entry,metadata:{...m,date,dateLabel:formatAmendmentDate(date),dateSource:matching.length?'matching-bill-cover-date':'same-bill-source-year',issues:m.issues.filter(i=>i.code!=='AMENDMENT_DATE_REQUIRED')}};
  });
 }
 
 function automaticRoles(bills,instructions,date){
- if(bills.length===1){const one=bills[0];if(date&&one.metadata.date&&one.metadata.date<date)return {previous:one,current:null,issues:[]};if(date&&one.metadata.date&&one.metadata.date>date)return {previous:null,current:one,issues:[issue('PREVIOUS_REQUIRED','The only bill version is dated after this amendment set. Supply or choose its Previous Version.')]};return {previous:null,current:null,issues:[issue('VERSION_ASSIGNMENT_REQUIRED','Confirm that this single uploaded bill is the Previous Version; its filename counter or same-day date alone cannot establish that role.')]};}
- if(bills.length===2){
-  const [a,b]=bills;if(a.metadata.date&&b.metadata.date&&a.metadata.date!==b.metadata.date){const ordered=[a,b].sort((x,y)=>x.metadata.date.localeCompare(y.metadata.date));if(!date||ordered[0].metadata.date<=date&&ordered[1].metadata.date>=date)return {previous:ordered[0],current:ordered[1],issues:[]};}
-  const attempts=[[a,b],[b,a]].map(([previous,current])=>{const p=planAmendments({previous,instructions,current});return {previous,current,valid:p.ready&&p.verification.length>0&&p.verification.every(r=>r.status==='implemented')};});
-  const proved=attempts.filter(a=>a.valid);if(proved.length===1)return {...proved[0],issues:[],orientationProof:'all-amendments-verified'};
- }
- if(date&&bills.length>2){const before=bills.filter(e=>e.metadata.date&&e.metadata.date<date).sort((a,b)=>b.metadata.date.localeCompare(a.metadata.date)),after=bills.filter(e=>e.metadata.date&&e.metadata.date>=date).sort((a,b)=>a.metadata.date.localeCompare(b.metadata.date));if(before.length&&after.length&&before.filter(e=>e.metadata.date===before[0].metadata.date).length===1&&after.filter(e=>e.metadata.date===after[0].metadata.date).length===1)return {previous:before[0],current:after[0],issues:[]};}
- return {previous:null,current:null,issues:[issue('VERSION_ASSIGNMENT_REQUIRED',bills.length?'Choose the Previous and Current files. Version labels such as v99/v98 alone do not establish chronology.':'Supply the Previous Version PDF.')]};
+ const result=previous=>({previous,current:null,issues:[]}),priorDate=instructions.metadata.sourceVersionDate;
+ if(!bills.length)return {previous:null,current:null,issues:[issue('PREVIOUS_REQUIRED','Upload the bill PDF to mark with these amendments.')]};
+ const namedPrevious=bills.filter(e=>/\b(?:previous|prior|old|before)\b/i.test(e.name.replaceAll('_',' ')));
+ if(namedPrevious.length>1)return {previous:null,current:null,issues:[issue('VERSION_ASSIGNMENT_REQUIRED','More than one bill filename identifies the previous version. Choose the bill to mark.')]};
+ if(namedPrevious.length===1)return result(namedPrevious[0]);
+ if(bills.length===1)return result(bills[0]);
+ if(priorDate){const matches=bills.filter(e=>e.metadata.date===priorDate);if(matches.length===1)return result(matches[0]);}
+ if(date&&bills.every(e=>validDate(e.metadata.date))){const before=bills.filter(e=>e.metadata.date<date).sort((a,b)=>b.metadata.date.localeCompare(a.metadata.date));if(before.length&&before.filter(e=>e.metadata.date===before[0].metadata.date).length===1)return result(before[0]);}
+ return {previous:null,current:null,issues:[issue('VERSION_ASSIGNMENT_REQUIRED','Multiple bill PDFs match this bill number. Choose the previous bill to mark; version counters alone do not establish which file the instructions amend.')]};
 }
 
 export function analyzeBatch(inputEntries,assignments={}){
@@ -113,25 +119,25 @@ export function analyzeBatch(inputEntries,assignments={}){
   const selectedInstruction=instruction;
   if(own(a,'instructionsId')&&a.instructionsId!==instruction.id)localIssues.push(issue('INSTRUCTIONS_ASSIGNMENT_INVALID','This group belongs to its own instruction set. Remove a duplicate set or correct the file classification.'));
   let roles=automaticRoles(bills,instruction,date);
-  if(own(a,'previousId')||own(a,'currentId')){
+  if(own(a,'previousId')){
    const byId=new Map(bills.map(e=>[e.id,e]));
-   const previous=own(a,'previousId')?byId.get(a.previousId)||null:roles.previous,current=own(a,'currentId')?(a.currentId?byId.get(a.currentId)||null:null):roles.current;
-   roles={previous,current,issues:[]};if(!previous)roles.issues.push(issue('PREVIOUS_REQUIRED','Choose a Previous Version from this bill’s uploaded files.'));if(a.currentId&&!current)roles.issues.push(issue('CURRENT_ASSIGNMENT_INVALID','The selected Current Version is not an uploaded version of this bill.'));
+   const previous=byId.get(a.previousId)||null;
+   roles={previous,current:null,issues:[]};if(!previous)roles.issues.push(issue('PREVIOUS_REQUIRED','Choose the bill to mark from this bill number’s uploaded files.'));
   }
   localIssues.push(...roles.issues);
-  if(roles.previous&&roles.current&&roles.previous.id===roles.current.id)localIssues.push(issue('SAME_BILL_VERSION','Previous and Current must be different uploaded files.'));
-  for(const e of [roles.previous,roles.current].filter(Boolean))localIssues.push(...e.metadata.issues.filter(i=>!['AMENDMENT_DATE_REQUIRED'].includes(i.code)).map(i=>({...i,entryId:e.id})));
-  let plan=null;if(roles.previous&&localIssues.length===0){plan=planAmendments({previous:roles.previous,instructions:selectedInstruction,current:roles.current});localIssues.push(...plan.issues);}
+  if(roles.previous){const previous=roles.previous,priorDate=instruction.metadata.sourceVersionDate;if(previous.metadata.date&&date&&previous.metadata.date>date)localIssues.push(issue('PREVIOUS_DATE_CONFLICT','The selected bill is dated after this amendment set. Confirm the correct previous bill.',{entryId:previous.id}));if(priorDate&&previous.metadata.date&&priorDate!==previous.metadata.date)localIssues.push(issue('PREVIOUS_EDITION_CONFLICT','The instruction heading names a different previous bill date than the selected bill. Confirm the correct bill.',{entryId:previous.id}));if(/\b(?:current|latest|new)\b/i.test(previous.name.replaceAll('_',' ')))localIssues.push(issue('PREVIOUS_FILENAME_CONFLICT','The selected filename identifies a newer bill version. Confirm its file classification before using it as the previous bill.',{entryId:previous.id}));}
+  for(const e of bills)localIssues.push(...e.metadata.issues.filter(i=>i.code!=='AMENDMENT_DATE_REQUIRED').map(i=>({...i,entryId:e.id})));
+  let plan=null;if(roles.previous&&localIssues.length===0){plan=planAmendments({previous:roles.previous,instructions:selectedInstruction});localIssues.push(...plan.issues);}
   const filename=outputFilename(billId,date),ready=!!filename&&!!plan?.ready&&localIssues.length===0;
-  groups.push({id,billId,date,dateLabel:formatAmendmentDate(date),outputFilename:filename,previous:roles.previous,current:roles.current,instructions:selectedInstruction,entries:candidates,status:ready?'ready':'needs-review',ready,issues:localIssues,plan,assignment:{billId,date:date||'',previousId:roles.previous?.id||'',currentId:roles.current?.id||'',instructionsId:instruction.id},orientationProof:roles.orientationProof||null});
+  groups.push({id,billId,date,dateLabel:formatAmendmentDate(date),outputFilename:filename,previous:roles.previous,current:null,instructions:selectedInstruction,entries:candidates,status:ready?'ready':'needs-review',ready,issues:localIssues,plan,assignment:{billId,date:date||'',previousId:roles.previous?.id||'',instructionsId:instruction.id}});
  }
  const instructionBills=new Set(groups.map(e=>e.billId).filter(Boolean));
  const orphanBills=new Set(entries.filter(e=>e.metadata.kind==='bill'&&e.metadata.billId&&!instructionBills.has(e.metadata.billId)).map(e=>e.metadata.billId));
- for(const billId of orphanBills){const candidates=entries.filter(e=>e.metadata.billId===billId&&e.metadata.kind==='bill');groups.push({id:'unmatched:'+billId,billId,date:null,dateLabel:'',outputFilename:'',previous:null,current:null,instructions:null,entries:candidates,status:'needs-review',ready:false,issues:[issue('INSTRUCTIONS_REQUIRED','Upload this bill’s instructional amendment PDF.')],plan:null,assignment:{billId,date:'',previousId:'',currentId:'',instructionsId:''}});}
+ for(const billId of orphanBills){const candidates=entries.filter(e=>e.metadata.billId===billId&&e.metadata.kind==='bill');groups.push({id:'unmatched:'+billId,billId,date:null,dateLabel:'',outputFilename:'',previous:null,current:null,instructions:null,entries:candidates,status:'needs-review',ready:false,issues:[issue('INSTRUCTIONS_REQUIRED','Upload this bill’s instructional amendment PDF.')],plan:null,assignment:{billId,date:'',previousId:'',instructionsId:''}});}
  for(const entry of entries.filter(e=>e.metadata.kind==='unknown'||e.metadata.kind==='digest'||!e.metadata.billId)){
   if(entry.metadata.kind==='amendments'&&groups.some(g=>g.instructions?.id===entry.id))continue;
   if(groups.some(g=>g.entries.some(e=>e.id===entry.id)))continue;
-  groups.push({id:'unclassified:'+entry.id,billId:entry.metadata.billId,date:entry.metadata.date,dateLabel:entry.metadata.dateLabel,outputFilename:'',previous:null,current:null,instructions:null,entries:[entry],status:'needs-review',ready:false,issues:entry.metadata.kind==='digest'?[issue('DIGEST_NOT_INSTRUCTION_SET','A replacement Digest is not an amendment instruction set. Remove it from this batch or correct its file classification.')]:entry.metadata.issues.length?entry.metadata.issues:[issue('CLASSIFICATION_REQUIRED','Confirm this PDF’s bill number and document type.')],plan:null,assignment:{billId:entry.metadata.billId||'',date:entry.metadata.date||'',previousId:'',currentId:'',instructionsId:''}});
+  groups.push({id:'unclassified:'+entry.id,billId:entry.metadata.billId,date:entry.metadata.date,dateLabel:entry.metadata.dateLabel,outputFilename:'',previous:null,current:null,instructions:null,entries:[entry],status:'needs-review',ready:false,issues:entry.metadata.kind==='digest'?[issue('DIGEST_NOT_INSTRUCTION_SET','A replacement Digest is not an amendment instruction set. Remove it from this batch or correct its file classification.')]:entry.metadata.issues.length?entry.metadata.issues:[issue('CLASSIFICATION_REQUIRED','Confirm this PDF’s bill number and document type.')],plan:null,assignment:{billId:entry.metadata.billId||'',date:entry.metadata.date||'',previousId:'',instructionsId:''}});
  }
  const collisions=new Map();for(const g of groups)if(g.outputFilename){const key=g.outputFilename.toLowerCase();if(!collisions.has(key))collisions.set(key,[]);collisions.get(key).push(g);}
  for(const rows of collisions.values())if(rows.length>1)for(const group of rows){group.ready=false;group.status='needs-review';group.issues.push(issue('OUTPUT_FILENAME_COLLISION','Multiple uploaded instruction sets produce the same bill/date filename. Remove a duplicate set or confirm their distinct amendment dates.'));}

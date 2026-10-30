@@ -1,6 +1,6 @@
-import {amendmentPlan,parseAmendments,verifyAmendments} from './amendments.mjs';
-import {activeText} from './core.mjs';
+import {amendmentPlan,parseAmendments} from './amendments.mjs';
 import {repairOcrInstructions} from './ocr-text.mjs';
+import {instructionLocations,instructionIssueContext,instructionSourceText} from './amendment-issues.mjs';
 
 const documentOf=value=>value?.doc||value;
 const issue=(code,message,extra={})=>({code,message,...extra});
@@ -8,9 +8,13 @@ const overlaps=(a,b)=>a.start<b.end&&b.start<a.end;
 
 export function documentReadingIssues(value,label='Source'){
  const doc=documentOf(value);if(!doc)return [];
- const rows=[];
- for(const quality of doc.scanQuality||[])for(const warning of quality.uncertain||[])rows.push(issue('PDF_READING_UNCERTAIN',`${label} page ${quality.page}: confirm the PDF reading${warning.text?' “'+warning.text+'”':''} against its original page.`,{page:quality.page,warning}));
- for(const warning of [...(doc.readingProblems||[]),...(value?.readingProblems||[])])rows.push(issue('PDF_READING_PROBLEM',`${label}: ${typeof warning==='string'?warning:warning.reason||warning.message||'original text reading requires review'}.`));
+ const rows=[],source=label==='Amendments'?'instructions':label==='Previous Version'?'previous':'reference',context={source,...(value?.id?{entryId:value.id}:{})};
+ for(const quality of doc.scanQuality||[])for(const warning of quality.uncertain||[]){
+  const pageOffset=(doc.rawPages||[]).slice(0,quality.page-1).reduce((n,text)=>n+text.length+1,0),start=pageOffset+warning.start,end=pageOffset+warning.end;
+  const matching=source==='instructions'&&Number.isInteger(start)&&Number.isInteger(end)?instructionLocations(value).filter(r=>overlaps(r,{start,end})):[];
+  rows.push(issue('PDF_READING_UNCERTAIN',`${label} page ${quality.page}: confirm the PDF reading${warning.text?' “'+warning.text+'”':''} against its original page.`,{...context,...(matching.length===1?instructionIssueContext(value,matching[0].number):{}),page:quality.page,warning,...(Number.isInteger(start)&&Number.isInteger(end)?{readingStart:start,readingEnd:end}:{})}));
+ }
+ for(const warning of [...(doc.readingProblems||[]),...(value!==doc?value?.readingProblems||[]:[])])rows.push(issue('PDF_READING_PROBLEM',`${label}: ${typeof warning==='string'?warning:warning?.reason||warning?.message||'original text reading requires review'}.`,{...context,...(Number.isInteger(warning?.page)?{page:warning.page}:{})}));
  return rows;
 }
 
@@ -30,24 +34,25 @@ function sourceRanges(doc,tokens,patch){
  return ranges;
 }
 
-export function planAmendments({previous,instructions,current=null,digest=null,externalDocs={}}={}){
- const prev=documentOf(previous),inst=documentOf(instructions),now=documentOf(current),issues=[],warnings=[];
+export function planAmendments({previous,instructions,digest=null,externalDocs={}}={}){
+ const prev=documentOf(previous),inst=documentOf(instructions),issues=[],warnings=[];
  if(!prev?.text||!Array.isArray(prev.tokens))issues.push(issue('PREVIOUS_REQUIRED','Choose a readable Previous Version PDF.'));
  if(!inst?.text)issues.push(issue('INSTRUCTIONS_REQUIRED','Choose the corresponding instructional amendment PDF.'));
  if(digest)issues.push(issue('DIGEST_MARKUP_UNSUPPORTED','Replacement Digest PDFs are not instructional amendments. This version marks only the explicit amendment instructions on the previous bill.'));
  issues.push(...documentReadingIssues(previous,'Previous Version'),...documentReadingIssues(instructions,'Amendments'));
- if(now)issues.push(...documentReadingIssues(current,'Current Version'));
  const external=Object.fromEntries(Object.entries(externalDocs).map(([key,value])=>[key,documentOf(value)]));
  for(const [key,value]of Object.entries(externalDocs))issues.push(...documentReadingIssues(value,'Referenced '+key));
  if(issues.length)return {ready:false,amendments:[],issues,warnings,verification:[]};
- const active=activeText(inst),text=inst.ocr?repairOcrInstructions(active):active;
+ const active=instructionSourceText(inst),text=inst.ocr?repairOcrInstructions(active):active;
+ if(!text.trim())return {ready:false,amendments:[],issues:[issue('NO_AMENDMENTS_FOUND','No active amendment instructions were found in this PDF.',{source:'instructions',...(instructions?.id?{entryId:instructions.id}:{})})],warnings,verification:[]};
  const parsed=parseAmendments(text),seen=new Set();
- for(const rule of parsed){const n=String(rule.number),canonical=n.replace(/^0+(?=\d)/,'');if(!/^\d{1,5}$/.test(n)||canonical==='0')issues.push(issue('AMENDMENT_NUMBER_INVALID','An amendment number is missing or cannot fit a safe numbered PDF marker.',{number:n}));if(seen.has(canonical))issues.push(issue('AMENDMENT_NUMBER_DUPLICATE',`Amendment ${n} occurs more than once. Confirm the instruction set before making marks.`,{number:n}));seen.add(canonical);}
+ for(const rule of parsed){const n=String(rule.number),canonical=n.replace(/^0+(?=\d)/,'');if(!/^\d{1,5}$/.test(n)||canonical==='0')issues.push(issue('AMENDMENT_NUMBER_INVALID','An amendment number is missing or cannot fit a safe numbered PDF marker.',instructionIssueContext(instructions,n)));if(seen.has(canonical))issues.push(issue('AMENDMENT_NUMBER_DUPLICATE',`Amendment ${n} occurs more than once. Confirm the instruction set before making marks.`,instructionIssueContext(instructions,n)));seen.add(canonical);}
  if(issues.length)return {ready:false,amendments:[],issues,warnings,verification:[]};
- let plan;try{plan=amendmentPlan(text,prev,now||prev,external);}catch(error){return {ready:false,amendments:[],issues:[issue('PLAN_FAILED',error.message)],warnings,verification:[]};}
+ let plan;try{plan=amendmentPlan(text,prev,prev,external);}catch(error){return {ready:false,amendments:[],issues:[issue('PLAN_FAILED',error.message,{source:'instructions',...(instructions?.id?{entryId:instructions.id}:{})})],warnings,verification:[]};}
+ if(!plan.compiled.length)return {ready:false,amendments:[],issues:[issue('NO_AMENDMENTS_FOUND','No active amendment instructions were found in this PDF.',{source:'instructions',...(instructions?.id?{entryId:instructions.id}:{})})],warnings,verification:[]};
  const amendments=plan.compiled.map(rule=>{
-  const row={number:String(rule.number),action:rule.action,directive:rule.directive,insertText:rule.insertText,sourceRanges:[],insertion:null,insertions:[],between:rule.between?{page:rule.page,above:rule.between[0],below:rule.between[1]}:null,patches:[],ready:true,issues:[]};
-  const reject=(code,message)=>{row.ready=false;const value=issue(code,message,{number:row.number});row.issues.push(value);issues.push(value);};
+  const row={...instructionIssueContext(instructions,rule.number),number:String(rule.number),action:rule.action,directive:rule.directive,insertText:rule.insertText,sourceRanges:[],insertion:null,insertions:[],between:rule.between?{page:rule.page,above:rule.between[0],below:rule.between[1]}:null,patches:[],ready:true,issues:[]};
+  const reject=(code,message)=>{row.ready=false;const value=issue(code,message,instructionIssueContext(instructions,row.number));row.issues.push(value);issues.push(value);};
   if(rule.error)reject('SOURCE_LOCATION_UNRESOLVED',rule.error);
   if(rule.attachmentWarning)reject('DRAFTING_ATTACHMENT_REQUIRED',rule.attachmentWarning);
   if(!rule.error&&!rule.patches.length)reject('EMPTY_AMENDMENT_PLAN','The amendment has no source location that can be marked.');
@@ -66,10 +71,5 @@ export function planAmendments({previous,instructions,current=null,digest=null,e
   }catch(error){reject('SOURCE_RANGE_UNRESOLVED',error.message);}
   return row;
  });
- let verification=[];
- if(now&&amendments.every(a=>a.ready)){
-  try{verification=verifyAmendments(text,prev,now,external);for(const r of verification)if(r.status!=='implemented')warnings.push(issue('CURRENT_VERSION_DIFFERENCE',`Amendment ${r.number}: ${r.message}`,{number:String(r.number),status:r.status}));}
-  catch(error){warnings.push(issue('CURRENT_VERIFICATION_UNAVAILABLE',`Current Version cross-check: ${error.message}`));}
- }
- return {ready:issues.length===0&&amendments.length>0&&amendments.every(a=>a.ready),amendments,issues,warnings,verification,instructionText:text};
+ return {ready:issues.length===0&&amendments.length>0&&amendments.every(a=>a.ready),amendments,issues,warnings,verification:[],instructionText:text};
 }

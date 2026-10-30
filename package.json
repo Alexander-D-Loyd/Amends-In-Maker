@@ -1,7 +1,7 @@
 {
   "name": "amends-in-maker",
   "productName": "Amends In Maker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "main": "main.cjs",
   "description": "Offline batch PDF amendment markup for California legislative bills",
