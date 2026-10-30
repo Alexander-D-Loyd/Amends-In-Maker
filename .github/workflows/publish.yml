@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - .github/release-receipts/1.0.4.json
-      - .github/release-receipts/1.0.4.package-manifest.json
+      - .github/release-receipts/1.0.5.json
+      - .github/release-receipts/1.0.5.package-manifest.json
 
 concurrency:
-  group: amends-in-maker-release-1.0.4
+  group: amends-in-maker-release-1.0.5
   cancel-in-progress: false
 
 jobs:
@@ -46,8 +46,8 @@ jobs:
       - name: Run standalone source and release checks
         run: pnpm test
       - name: Reconstruct the exact tested Windows ZIP
-        run: node scripts/publish-release.cjs --prepare .github/release-receipts/1.0.4.json
+        run: node scripts/publish-release.cjs --prepare .github/release-receipts/1.0.5.json
       - name: Publish verified ZIP and checksum as latest
-        run: node scripts/publish-release.cjs --publish .github/release-receipts/1.0.4.json
+        run: node scripts/publish-release.cjs --publish .github/release-receipts/1.0.5.json
         env:
           GH_TOKEN: ${{ github.token }}

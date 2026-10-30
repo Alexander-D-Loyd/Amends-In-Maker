@@ -118,7 +118,7 @@ test('line-relative PDF marks reject missing numbers, conflicting offsets and un
 
 test('line-relative arrows never cross printed digits or hide under an amendment badge',async()=>{
  const previous=await fixture(['First provision.','Final provision.']),row={number:1,action:'insert',lineInsertion:{page:1,line:1,position:'below'}};
- const dense=structuredClone(previous),lower=dense.pages[0].lines[1];lower.baseline=690;lower.margin.y=687.8;assert.equal(buildPdfMarks({previous:dense,plan:plan([row])}).ready,false);
+ const dense=structuredClone(previous),lower=dense.pages[0].lines[1];lower.baseline=690;lower.margin.y=687.8;const shifted=buildPdfMarks({previous:dense,plan:plan([row])});assert.equal(shifted.ready,true,shifted.issues.join('\n'));const arrow=shifted.amendments[0].insertions[0];assert.ok(arrow.x-arrow.length-PDF_MARK_STYLE.arrowWidth/2>Math.max(...dense.pages[0].lines.map(l=>l.margin.x+l.margin.width)));assert.ok(arrow.x+PDF_MARK_STYLE.arrowWidth/2<Math.min(...dense.pages[0].lines.map(l=>l.left)));
  const cropped=structuredClone(previous);cropped.pages[0].view=[40,40,587,752];for(const line of cropped.pages[0].lines)line.left=65;assert.equal(buildPdfMarks({previous:cropped,plan:plan([row])}).ready,false);
  assert.equal(buildPdfMarks({previous,plan:plan([row])}).ready,true);
 });

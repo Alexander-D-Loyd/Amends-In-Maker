@@ -1,4 +1,4 @@
-import {readPdfFile,renderPdfPage,readingWarnings,confirmPdfReading} from './pdf-intake.mjs';
+import {readPdfBytes,readPdfFile,renderPdfPage,readingWarnings,confirmPdfReading} from './pdf-intake.mjs';
 import {analyzeBatch,classifyEntry} from './batch.mjs';
 import {createMarkedPdf} from './pdf-markup.mjs';
 import {instructionLocation} from './amendment-issues.mjs';
@@ -19,26 +19,19 @@ function updateFolder(){ $('output-folder-name').textContent=state.folder||'Choo
 function queue(){const items=[];for(const g of state.groups){const seen=new Set();for(const i of [...g.output.issues,...(state.runtimeIssues.get(g.id)||[])]){const issue=typeof i==='string'?{message:i}:i,signature=JSON.stringify([issue.code,issue.number,issue.entryId,issueText(issue)]);if(seen.has(signature))continue;seen.add(signature);items.push({group:g,issue});}}for(const failure of state.failures)items.push({group:null,issue:{code:'PDF_LOAD_FAILED',message:failure.name+': '+failure.error},failure});return items;}
 function render(){
   $('batch-results').hidden=!state.entries.length&&!state.failures.length;
-  const created=state.groups.filter(g=>resultFor(g)?.kind==='saved').length,skipped=state.groups.filter(g=>resultFor(g)?.kind==='skipped').length;
-  $('batch-summary').textContent=`${state.entries.length} files · ${state.groups.length} bills / amendment sets · ${created} PDFs created${skipped?' · '+skipped+' existing files skipped':''}`;
-  const items=queue();$('attention-notice').hidden=!items.length;$('attention-title').textContent=items.length+' issue'+(items.length===1?' needs':'s need')+' attention';
+  const results=new Map(state.groups.map(g=>[g.id,resultFor(g)])),created=[...results.values()].filter(r=>r?.kind==='saved').length,skipped=[...results.values()].filter(r=>r?.kind==='skipped').length;
+  $('batch-summary').textContent=created+' PDF'+(created===1?'':'s')+' created'+(skipped?' · '+skipped+' existing file'+(skipped===1?'':'s')+' skipped':'');
+  const items=queue();
+  $('attention-notice').hidden=!items.length;$('attention-title').textContent=items.length+' issue'+(items.length===1?' needs':'s need')+' attention';
   const list=$('group-list');list.replaceChildren();
   for(const g of state.groups){
-    const result=resultFor(g),card=element('article',{className:'group-card'});card.dataset.groupId=g.id;card.dataset.status=result?.kind||(!g.output.exportable?'needs-review':g.output.partial?'partial':'pending');
-    const heading=element('div',{className:'group-card-header'}),name=element('div',{},[element('h3',{text:g.billId||g.entries?.[0]?.name||'Unmatched files'}),element('p',{className:'group-meta',text:g.dateLabel||'Amendment date needs review'})]);
-    const label=result?.kind==='saved'?(g.output.partial?'Created · unmarked amendments':'Created'):result?.kind==='skipped'?'Existing PDF skipped':!g.output.exportable?'Needs attention':'Waiting to save';
-    heading.append(name,element('span',{className:'status-badge'+(!g.output.exportable||g.output.partial?' needs-review':''),text:label}));card.append(heading);
-    if(g.outputFilename)card.append(element('p',{className:'output-name',text:g.outputFilename}));
-    card.append(element('p',{className:'group-status-line',text:g.output.totalCount?`${g.output.markedCount} of ${g.output.totalCount} amendments can be marked${g.output.unmarkedCount?' · '+g.output.unmarkedCount+' unmarked':''}.`:g.previous&&g.instructions?'The source files need review before marks can be created.':g.instructions?'Waiting for the matching bill PDF.':'Waiting for the matching amendment PDF.'}));
-    if(result)card.append(element('p',{className:'small-note',text:result.kind==='saved'?'Saved to '+result.path:result.reason||'An output with this name already exists. It was not overwritten.'}));
-    const errors=items.filter(x=>x.group?.id===g.id),ul=element('ul',{className:'issue-list'});
-    for(const item of errors){const button=element('button',{type:'button',className:'issue-link',text:(item.issue.number?'Amendment '+item.issue.number+' · ':'')+issueText(item.issue)});button.dataset.amendmentNumber=item.issue.number||'';button.addEventListener('click',()=>openIssue(items.indexOf(item)));ul.append(element('li',{},[button]));}card.append(ul);
-    if(g.output.exportable){const preview=element('button',{type:'button',className:'secondary',text:'View marked PDF'});preview.addEventListener('click',()=>openPreview(g));card.append(element('div',{className:'card-actions'},[preview]));}
-    if(g.instructions){const details=element('details'),form=pairingForm(g);details.append(element('summary',{text:'Adjust bill, amendment date or source file'}),form);card.append(details);}
-    list.append(card);
+    const result=results.get(g.id);if(!result)continue;
+    const row=element('li',{className:'group-card'});row.dataset.groupId=g.id;row.dataset.status=result.kind;row.dataset.markedCount=String(g.output.markedCount);row.dataset.totalCount=String(g.output.totalCount);row.dataset.unmarkedCount=String(g.output.unmarkedCount);
+    const identity=element('div',{className:'batch-identity'},[element('strong',{text:g.billId||'Unmatched file'}),element('time',{text:g.dateLabel||'Date unavailable',dateTime:g.date||''})]);
+    const view=element('button',{type:'button',className:'secondary view-pdf',text:'View PDF'});view.addEventListener('click',()=>openPreview(g));
+    row.append(element('div',{className:'batch-row-content'},[identity,element('div',{className:'card-actions'},[view])]));list.append(row);
   }
-  const failures=$('import-error-list');failures.replaceChildren();for(const f of state.failures)failures.append(element('li',{text:f.name+': '+f.error}));$('import-errors').hidden=!state.failures.length;
-  controls();
+  const failures=$('import-error-list');failures.replaceChildren();for(const f of state.failures)failures.append(element('li',{text:f.name+': '+f.error}));$('import-errors').hidden=!state.failures.length;controls();
 }
 function pairingForm(g){
   const form=element('form',{className:'pairing-form'}),bill=element('input',{type:'text',value:g.billId||'',placeholder:'AB 1982',required:true}),date=element('input',{type:'date',value:g.date||'',required:true}),previous=element('select');
@@ -77,9 +70,10 @@ async function importFiles(files){
   $('issue-dialog').close();state.reading=true;state.controller=new AbortController();$('import-progress').hidden=false;controls();let loaded=0,duplicates=0;
   try{for(let i=0;i<input.length;i++){
     if(state.controller.signal.aborted)break;const file=input[i];$('read-progress').max=input.length;$('read-progress').value=i;
-    try{const entry=await readPdfFile(file,{signal:state.controller.signal,onProgress:p=>{$('import-status').textContent=`${i+1} of ${input.length} · ${file.name} · ${p.message||'Reading PDF…'}`;}});if(state.controller.signal.aborted)break;
-      entry.uiFingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',entry.bytes)),b=>b.toString(16).padStart(2,'0')).join('');
-      if(state.entries.some(e=>e.uiFingerprint===entry.uiFingerprint)){duplicates++;continue;}state.entries.push(entry);state.failures=state.failures.filter(f=>f.name!==file.name);loaded++;
+    try{$('import-status').textContent=`${i+1} of ${input.length} · ${file.name} · Checking PDF…`;const preparedBytes=await readPdfBytes(file,{signal:state.controller.signal}),fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',preparedBytes)),b=>b.toString(16).padStart(2,'0')).join('');if(state.controller.signal.aborted)break;
+      if(state.entries.some(e=>e.uiFingerprint===fingerprint)){duplicates++;continue;}
+      const entry=await readPdfFile(file,{preparedBytes,signal:state.controller.signal,onProgress:p=>{$('import-status').textContent=`${i+1} of ${input.length} · ${file.name} · ${p.message||'Reading PDF…'}`;}});if(state.controller.signal.aborted)break;
+      entry.uiFingerprint=fingerprint;state.entries.push(entry);state.failures=state.failures.filter(f=>f.name!==file.name);loaded++;
     }catch(e){if(state.controller.signal.aborted)break;state.failures.push({name:file.name,error:message(e)});}
     $('read-progress').value=i+1;
   }}finally{const cancelled=state.controller.signal.aborted;state.reading=false;state.controller=null;$('import-progress').hidden=true;$('file-input').value='';rebuild();if(!$('file-labels').hidden)renderFileLabels();status(`${loaded} PDFs loaded${duplicates?'; '+duplicates+' duplicates skipped':''}.${cancelled?' Remaining files cancelled.':''}`);if(!cancelled)await processOutputs();controls();}
@@ -89,7 +83,7 @@ function renderFileLabels(){const list=$('file-label-list');list.replaceChildren
   const field=(text,input)=>element('label',{text},[input]),remove=element('button',{type:'button',className:'secondary',text:'Remove'}),save=element('button',{type:'submit',className:'secondary',text:'Apply'});form.append(element('div',{className:'file-label-name',text:entry.name}),field('Bill number',bill),field('File type',kind),field('Amendment / bill date',date),element('div',{className:'file-label-actions'},[save,remove]));
   remove.addEventListener('click',async()=>{if(busy())return;state.entries=state.entries.filter(e=>e!==entry);state.assignments={};rebuild();renderFileLabels();await processOutputs();});
   form.addEventListener('submit',async e=>{e.preventDefault();if(busy()||!form.isConnected)return;entry.manualMetadata={billId:bill.value.trim(),kind:kind.value,...(date.value?{date:date.value}:{})};state.assignments={};rebuild();renderFileLabels();await processOutputs();});list.append(form);
-}controls();}
+}for(const g of state.groups)if(g.instructions){const details=element('details',{className:'file-pairing-review'});details.append(element('summary',{text:(g.billId||'Unmatched bill')+' · '+(g.dateLabel||'Review amendment date')}),pairingForm(g));list.append(details);}controls();}
 function sourceFor(item){const g=item.group,i=item.issue;return state.entries.find(e=>e.id===i.entryId)||(i.source==='previous'?g?.previous:g?.instructions)||g?.instructions||g?.previous||g?.entries?.[0]||null;}
 function locationFor(item,entry){return item.group?.instructions?.id===entry?.id&&item.issue.number?instructionLocation(entry,item.issue.number):null;}
 function openIssue(index=0){const items=queue();if(!items.length)return;state.issueIndex=Math.max(0,Math.min(index,items.length-1));const item=items[state.issueIndex],entry=sourceFor(item),location=locationFor(item,entry);state.issuePage=location?.page||item.issue.instructionPage||(item.issue.warning?item.issue.page:1)||1;if(!$('issue-dialog').open)$('issue-dialog').showModal();renderIssue();}
@@ -118,7 +112,7 @@ async function renderPreview(){const g=state.previewGroup,sequence=++state.previ
 $('choose-files').addEventListener('click',()=>$('file-input').click());$('file-input').addEventListener('change',e=>importFiles(e.target.files));
 for(const event of ['dragenter','dragover'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();if(!busy())$('drop-zone').classList.add('dragging');});for(const event of ['dragleave','drop'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();$('drop-zone').classList.remove('dragging');});$('drop-zone').addEventListener('drop',e=>importFiles(e.dataTransfer.files));document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>e.preventDefault());
 $('output-folder').addEventListener('click',async()=>{if(busy())return;if(await chooseFolder())await processOutputs({notify:false});});$('retry-output').addEventListener('click',()=>processOutputs());$('cancel-import').addEventListener('click',()=>state.controller?.abort());
-$('clear-batch').addEventListener('click',()=>{if(busy())return;state.revision++;state.issueSequence++;state.previewSequence++;state.entries=[];state.groups=[];state.failures=[];state.assignments={};state.results.clear();state.runtimeIssues.clear();state.marked.clear();$('file-labels').hidden=true;$('issue-dialog').close();$('preview-dialog').close();render();status('Ready for another batch.');});
+$('clear-batch').addEventListener('click',()=>{if(busy())return;state.revision++;state.issueSequence++;state.previewSequence++;state.entries=[];state.groups=[];state.failures=[];state.assignments={};state.results.clear();state.runtimeIssues.clear();state.marked.clear();state.previewGroup=null;state.previewPage=1;state.issueIndex=0;state.issuePage=1;$('file-input').value='';$('file-label-list').replaceChildren();$('issue-reading').replaceChildren();for(const id of ['preview-canvas','issue-canvas']){$(id).width=0;$(id).height=0;}$('file-labels').hidden=true;$('issue-dialog').close();$('preview-dialog').close();render();status('Cache cleared. Ready for new files.');});
 $('review-files').addEventListener('click',()=>{$('file-labels').hidden=!$('file-labels').hidden;if(!$('file-labels').hidden)renderFileLabels();});$('close-file-labels').addEventListener('click',()=>{$('file-labels').hidden=true;});$('review-issues').addEventListener('click',()=>openIssue(0));$('close-issue').addEventListener('click',()=>$('issue-dialog').close());$('issue-dialog').addEventListener('close',()=>{if(!$('issue-dialog').open)state.issueSequence++;});
 $('previous-issue').addEventListener('click',()=>openIssue(state.issueIndex-1));$('next-issue').addEventListener('click',()=>openIssue(state.issueIndex+1));$('issue-previous-page').addEventListener('click',()=>{state.issuePage--;renderIssue();});$('issue-next-page').addEventListener('click',()=>{state.issuePage++;renderIssue();});$('issue-add-files').addEventListener('click',()=>{$('issue-dialog').close();$('file-input').click();});
 $('close-preview').addEventListener('click',()=>$('preview-dialog').close());$('preview-dialog').addEventListener('close',()=>{if(!$('preview-dialog').open)state.previewSequence++;});$('preview-previous').addEventListener('click',()=>{state.previewPage--;renderPreview();});$('preview-next').addEventListener('click',()=>{state.previewPage++;renderPreview();});

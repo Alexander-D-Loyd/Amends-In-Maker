@@ -132,8 +132,23 @@ function marginLineInsertion(location, rows, offset) {
   const bodyLeft = marginOnly(line) ? Math.min(box.x + box.width, ...rows.filter(r => r.page.page === page.page && !marginOnly(r.line) && finite(r.line.left) && r.line.left > m.x + m.width).map(r => r.line.left)) : line.left;
   const x = Math.min(m.x + m.width + 7, bodyLeft - 3), length = Math.min(PDF_MARK_STYLE.arrowLength, x - m.x);
   if (length < 5 || !inside(box, x - length, y) || !inside(box, x, y)) throw Error('The printed margin has no clear space for this insertion arrow.');
-  const insertion = {page:page.page, x:round(x), y:round(y), direction:'right', length:round(length), lineInsertion:{...location}};
-  if (arrowPaintRectangles(insertion).some(rect => rows.some(r => r.page.page === page.page && r.line.margin && rectanglesOverlap(rect,r.line.margin)))) throw Error('The requested margin gap is too tight for an insertion arrow without crossing a printed number.');
+  let insertion = {page:page.page, x:round(x), y:round(y), direction:'right', length:round(length), lineInsertion:{...location}};
+  const pageRows = rows.filter(r => r.page.page === page.page), digits = pageRows.filter(r => r.line.margin).map(r => r.line.margin);
+  const bodies = pageRows.flatMap(r => {
+    const glyphs = lineGlyphs(r.line).filter(g => g.text === undefined || g.text.trim());
+    if (glyphs.length) return glyphs;
+    return !marginOnly(r.line) && finite(r.line.left) && finite(r.line.right) && r.line.right > r.line.left ? [{x:r.line.left,y:r.line.baseline-r.line.height*.22,width:r.line.right-r.line.left,height:r.line.height}] : [];
+  });
+  const clear = candidate => arrowPaintRectangles(candidate).every(rect => validRect(rect,box) && !digits.some(d => rectanglesOverlap(rect,d)) && !bodies.some(b => rectanglesOverlap(rect,b)));
+  if (!clear(insertion)) {
+    // Tight row leading can leave no vertical gap inside the number column.
+    // Use the clear horizontal gutter beside the digits instead.
+    const near = rect => rect.y < y + halfHead && rect.y + rect.height > y - halfHead;
+    const digitRight = Math.max(m.x+m.width,...digits.filter(near).map(d => d.x+d.width)), bodyLimit = Math.min(bodyLeft,...bodies.filter(near).map(b => b.x));
+    const tip = bodyLimit-3-PDF_MARK_STYLE.arrowWidth/2, available = tip-digitRight-1.5-PDF_MARK_STYLE.arrowWidth/2;
+    insertion = {...insertion,x:round(tip),length:round(Math.min(PDF_MARK_STYLE.arrowLength,available))};
+    if (insertion.length < 5 || !clear(insertion)) throw Error('The printed number and nearby text leave no clear margin space for this insertion arrow.');
+  }
   return {...target, insertion};
 }
 function normalizedLabels(amendments, pages) {
@@ -278,8 +293,7 @@ export async function createMarkedPdf({bytes, marks, title = 'Amends In', previo
     if (!validRect(label, crop(page)) || !/^\d{1,5}(?:,\d{1,5})*$/u.test(label.text) || label.text.split(',').some(n => Number(n) === 0)) throw Error('An amendment number label has invalid geometry or text.');
     const borderColor = rgb(0.38, 0.43, 0.5), white = rgb(1, 1, 1), ink = rgb(0.08, 0.12, 0.18), size = Math.min(PDF_MARK_STYLE.labelFontSize, (label.width - 3) / Math.max(1, font.widthOfTextAtSize(label.text, 1)));
     if (size < 5.5) throw Error('An amendment label would be too small to read.');
-    if (label.width <= label.height + 0.1) page.drawCircle({x: label.x + label.width / 2, y: label.y + label.height / 2, size: label.height / 2, borderWidth: 0.6, borderColor, color: white});
-    else page.drawRectangle({x: label.x, y: label.y, width: label.width, height: label.height, borderWidth: 0.6, borderColor, color: white});
+    page.drawRectangle({x: label.x, y: label.y, width: label.width, height: label.height, borderWidth: 0.6, borderColor, color: white});
     page.drawText(label.text, {x: label.x + (label.width - font.widthOfTextAtSize(label.text, size)) / 2, y: label.y + (label.height - size) / 2 + 0.8, size, font, color: ink});
   }
   if (typeof title !== 'string' || !title.trim() || title.length > 240 || /[\u0000-\u001f]/u.test(title)) throw Error('The PDF output title is invalid.');

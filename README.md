@@ -22,7 +22,7 @@ SB 879 March 26, 2026 AMENDS.pdf
 
 Example output:
 
-`AB 1982 March 25 Amends In.pdf`
+`AB 1982 March 25 AMENDS IN.pdf`
 
 Bill numbers and document roles are matched from filenames, with source conflicts reported for review. A single matching bill is automatically the PDF to mark. Multiple versions require a clear previous-version filename, an instruction heading identifying the prior edition, a unique dated prior bill, or a manual selection. Version counters alone do not establish chronology.
 
@@ -32,7 +32,7 @@ Existing output files are skipped, never overwritten. Duplicate uploads are dete
 
 ## PDF marks
 
-- Affected printed margin line numbers are highlighted yellow, with a small circled amendment number beside them.
+- Affected printed margin line numbers are highlighted yellow, with a small boxed amendment number beside them.
 - **Insert after:** a small blue arrow at the exact insertion point.
 - **Insert between lines:** a blue arrow between the two printed margin numbers, highlighting both numbers.
 - **Above / below a line:** a blue arrow above or below the referenced printed margin number, highlighting only that number. This works above the first line and below the last line, without requiring another printed number. Before-line and after-line instructions use the same placement.
@@ -49,12 +49,12 @@ Missing bills, missing amendments, uncertain file labels, unresolved dates, unre
 
 When individual amendments fail, independently located marks can be saved and the PDF is clearly labeled in the app as having unmarked amendments. The result lists every omitted amendment and opens its original instruction for review. Whole-file identity/date/reading-integrity problems and duplicate numbering hold that bill's output. Both sides of overlapping targets remain unmarked. If a partly marked output already exists after a correction, it is still skipped: choose another output folder or remove the old output before retrying.
 
-Use **Review files** to correct a filename's labels or remove a file before supplying a replacement. Confirm an uncertain OCR reading against its original PDF when prompted. Same-character-count corrections preserve exact source coordinates; larger corrections need a readable replacement PDF.
+**Amends In Files Created** lists outputs in compact numbered rows: bill, date and **View PDF**. Use **Review Files** to correct file labels or bill/date pairings, or remove a file before supplying a replacement. **Clear Cache** unloads the current files and previews. Confirm an uncertain OCR reading against its original PDF when prompted. Same-character-count corrections preserve exact source coordinates; larger corrections need a readable replacement PDF.
 
 Additional limits:
 
 - Missing supplemental drafting material or a replacement Digest may prevent marking an instruction.
-- Between-line arrows need both real consecutive printed numbers, except a verified final-line insertion can use the last actual number. Above/below instructions need the one referenced real printed number and clear margin space on the requested side.
+- Between-line arrows need both real consecutive printed numbers, except a verified final-line insertion can use the last actual number. Above/below instructions need the one referenced real printed number and clear margin space on the requested side. When tight row spacing leaves no vertical gap, the app tries the clear gutter beside the numbers without crossing the digits or bill text.
 - Rotated target pages, missing glyph positions and partial OCR-word selections need a readable upright source.
 - An unnumbered heading/title may receive a numbered marker without an invented margin highlight.
 - Each PDF is limited to 50 MB and 1,500 pages. Large batches depend on available memory.
@@ -75,7 +75,9 @@ pnpm start
 
 Asset setup restores pinned PDF.js/PDF-lib and local OCR assets. The OCR trained data is checked against a fixed commit, size and SHA-256. Initial setup requires a connection; document processing stays offline.
 
-`scripts/package-windows.cjs` stages a portable Windows app and deterministic ZIP with a complete file manifest and SHA-256 sidecar. The release workflow reconstructs the exact native-tested package before publication. Git preserves source bytes, including mixed line endings. Published versions and validation records are in `RELEASES.md` and `.github/release-receipts/`.
+Duplicate uploads are identified from source bytes before PDF parsing or OCR. The standalone planner avoids constructing an unused rewritten bill, and obsolete spelling/review helpers and unused vendor modules have been removed. A supplied bill's later date alone does not block otherwise locatable amendment instructions.
+
+`scripts/package-windows.cjs` stages a portable Windows app and reproducibly compressed ZIP with a complete file manifest and SHA-256 sidecar. A pinned build-only compressor uses fixed entry order, metadata and chunk sizes; Python independently reads and hashes every archived file. The release workflow still requires the exact native-tested manifest and whole-ZIP checksum before publication. Compression reduces the download; required Electron, OCR and PDF fallback assets remain included. Git preserves source bytes, including mixed line endings. Published versions and validation records are in `RELEASES.md` and `.github/release-receipts/`.
 
 The parser, document model and selected PDF/OCR helpers originate in [Document Compare](https://github.com/Alexander-D-Loyd/Document-Compare) commit `0cdcc7051fdeed406f4295abb45f9bf1f75b007e`; `upstream-provenance.json` records the original hashes. The standalone batch flow, PDF coordinate mapping, markup/export and save bridge are separate components. OCR-only dictionaries repair word spacing; there is no style-review interface.
 

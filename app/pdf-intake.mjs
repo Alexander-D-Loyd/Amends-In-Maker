@@ -13,16 +13,16 @@ import {isOcrStyle,repairOcrSpacing} from './ocr-text.mjs';
 import {loadOcrWordList} from './ocr-word-list.mjs';
 import {correctPdfReading} from './correct-pdf-reading.mjs';
 import {nativePdfGlyphs,mapLayoutGeometry} from './pdf-glyph-geometry.mjs';
+import {pdfFileBytes} from './pdf-file-bytes.mjs';
+export {readPdfBytes} from './pdf-file-bytes.mjs';
 
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdf.worker.mjs',import.meta.url).href;
 const options=()=>({fontExtraProperties:true,useSystemFonts:false,cMapUrl:new URL('./vendor/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/wasm/',import.meta.url).href,isEvalSupported:false});
 const check=signal=>{if(signal?.aborted)throw new DOMException('Reading cancelled.','AbortError');};
 const ocrWords=loadOcrWordList;
 const isInstruction=(text,name,hint)=>hint==='amendments'||hint!=='bill'&&(/\bAMENDS?\b|amendments?/i.test(name)||/^\s*Amendment\s+\d+\s*$/im.test(text)&&/\bOn\s+page\s+\d+/i.test(text));
-export async function readPdfFile(file,{onProgress=()=>{},signal,kindHint}={}){
- if(!file||typeof file.arrayBuffer!=='function'||!/^.*\.pdf$/i.test(file.name||''))throw Error('Choose a PDF file.');
- if(file.size>50*1024*1024)throw Error('This PDF exceeds the 50 MB limit.');
- check(signal);const bytes=new Uint8Array(await file.arrayBuffer());check(signal);
+export async function readPdfFile(file,{onProgress=()=>{},signal,kindHint,preparedBytes}={}){
+ const bytes=await pdfFileBytes(file,{signal,preparedBytes});check(signal);
  const task=pdfjs.getDocument({data:bytes.slice(),...options()}),pages=[],rawPages=[],strikes=[],formatting=[],scanQuality=[],readingProblems=[],jrBoxes=[],marginState={columns:[]};let pdf,ocr=null,pageOffset=0,instruction=false,ignoredFromPage=null,endMarkerPage=null,hasOcr=false;
  try{
   pdf=await task.promise;if(pdf.numPages>1500)throw Error('This PDF exceeds the 1,500-page limit.');

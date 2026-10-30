@@ -16,3 +16,5 @@ Amends In Maker retains the original license files of its bundled components.
 The OCR word list is not a licensed Merriam-Webster export and is not used to provide stylistic or dictionary-preference findings. The app contains no spelling/grammar review interface.
 
 Selected application helpers come from the user's Document Compare project. Their source commit and original hashes are recorded in `upstream-provenance.json`. No uploaded bill, test PDF, personal dictionary, profile or source-extraction model is included in the public distribution.
+
+The build process uses fflate 0.8.2, copyright (c) 2023 Arjun Barrett, under the MIT license to create reproducible compressed ZIP archives. It is a development dependency only; its code and `node_modules` are not bundled in the Windows application. The dependency retains its upstream `LICENSE` file.

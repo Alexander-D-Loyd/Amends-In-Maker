@@ -2,37 +2,8 @@ import {isBudgetRunningHead,digestRange} from './change-scope.mjs';
 import {historyTokens} from './history-rows.mjs';
 import {budgetContext,budgetLeaderRanges} from './budget-layout.mjs';
 import guideSpellings from './data/lcb-spelling-words.json' with {type:'json'};
-import {guidePhraseSpellingRanges} from './spelling-guide-phrases.mjs';
-import {statuteChapterSpellingRanges} from './spelling-statute-chapters.mjs';
-import {numberedSubchapterSpellingRanges} from './spelling-lcb-numbered-subchapter.mjs';
 import {billJrBoxes} from './amendment-jr-box.mjs';
 const guideCompounds=guideSpellings.words.filter(r=>r.word.includes('-')).map(r=>r.word);
-const compoundPattern=new RegExp('(?<![\\p{L}\\p{N}_])(?:'+guideCompounds.map(word=>word.split('-').map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[-\\u2010\\u2011]')).join('|')+')(?:[’\']s)?(?![\\p{L}\\p{N}_])','giu');
-export function classify(text) {
-  const trimmed = text.trim().replace(/^(?:[-•]\s+|\d+[.)]\s+)/, '');
-  // Prefer explicit editorial language; general obligations remain content.
-  const direct = /^(?:(?:editor(?:ial)?|revision|editing|reviewer)\s*(?:note|instruction)s?\s*[:\-]\s*)?(?:please\s+)?(delete|remove|omit|insert|add|replace|change|revise|rewrite|move|retain|keep)\b/i.exec(trimmed);
-  const indirect = /\b(?:paragraph|sentence|section|heading|word|phrase|text|clause|line|bullet|page)\b.{0,90}\b(?:should|must|needs? to)\s+be\s+(deleted|removed|omitted|inserted|added|replaced|changed|revised|rewritten|moved|retained)\b/i.exec(trimmed);
-  const contextual = /\b(?:delete|remove|omit|insert|add|replace|change|revise|rewrite|move|retain|keep)\b.{0,100}\b(?:paragraph|sentence|section|heading|word|phrase|text|clause|line|bullet|page|quotation|caption)\b/i.exec(trimmed);
-  const quoteAction = direct && /["“”‘’]/.test(trimmed);
-  const marked = /^(?:editor(?:ial)?|revision|editing|reviewer)\s*(?:note|instruction)s?\s*[:\-]/i.test(trimmed);
-  const targetMention = /\b(?:paragraph|sentence|section|heading|word|phrase|text|clause|line|bullet|page|quotation|caption)\b/i.test(trimmed);
-  // "Add sugar" and "Keep records for seven years" are ordinary content.
-  const targetFirst = /^(?:in|at|after|before|for)\s+(?:the\s+)?(?:paragraph|sentence|section|heading|line|page)\b.{0,60}[,:]\s*(?:please\s+)?(?:delete|remove|insert|add|replace|change|revise|rewrite|move)\b/i.test(trimmed);
-  const likely = !!(indirect || marked || targetFirst || (direct && (targetMention || quoteAction || /^(?:replace|rewrite|revise|omit)\b/i.test(direct[1]))));
-  const found = direct?.[1] || indirect?.[1] || contextual?.[0]?.match(/delete|remove|omit|insert|add|replace|change|revise|rewrite|move|retain|keep/i)?.[0];
-  const action = found ? found.toLowerCase().replace(/deleted/, 'delete').replace(/removed/, 'remove').replace(/replaced/, 'replace').replace(/changed/, 'change').replace(/inserted/, 'insert').replace(/added/, 'add').replace(/revised/, 'revise').replace(/rewritten/, 'rewrite').replace(/moved/, 'move').replace(/omitted/, 'omit').replace(/retained/, 'retain') : 'review';
-  const target = trimmed.match(/\b(?:paragraph|sentence|section|heading|word|phrase|text|clause|line|bullet|page)\s+(?:\d+(?:\.\d+)*|["“][^"”]+["”]|[A-Z](?=\b))/i)?.[0] || '';
-  const replacement = trimmed.match(/\b(?:with|insert|add)\s+["“]([^"”]+)["”]/i)?.[1] || '';
-  return { kind: likely ? 'instruction' : 'content', action, target, replacement, reason: likely ? 'Editorial wording detected; confirm the label.' : 'No explicit editing direction detected.' };
-}
-export function makeBlocks(pages) {
-  return pages.flatMap((text, page) => text.split(/\n+/).filter(line => line.trim()).map((text, i) => ({ id: `${page + 1}-${i}`, text: text.trim(), page: page + 1, ...classify(text) })));
-}
-export function contentText(doc, includeInstructions = false) {
-  return doc.blocks.filter(b => includeInstructions || b.kind === 'content').map(b => b.text).join('\n');
-}
-export function wordCount(text) { return (text.match(/\S+/g) || []).length; }
 // Compare lexical text across the whole document. Layout whitespace has no tokens.
 // Offsets refer to each source independently so rendering keeps accurate page refs.
 export function comparisonTokens(text) {
@@ -47,26 +18,6 @@ function outsideRanges(tokens,ranges){
     while(index<ranges.length&&ranges[index].end<=token.start)index++;
     const range=ranges[index];return !range||token.end<=range.start||token.start>=range.end;
   });
-}
-export function extractPageLines(items) {
-  const rows = [];
-  for (const item of items) {
-    if (!('str' in item) || !item.str.trim()) continue;
-    const y = item.transform[5];
-    let row = rows.find(row => Math.abs(row.y - y) <= 2);
-    if (!row) { row = { y, items: [] }; rows.push(row); }
-    row.items.push(item);
-  }
-  return rows.sort((a,b) => b.y - a.y).map(row => {
-    let text = '', end = null;
-    for (const item of row.items.sort((a,b) => a.transform[4] - b.transform[4])) {
-      const gap = end === null ? 0 : item.transform[4] - end;
-      if (text && gap > Math.max(1.5, item.height * .16) && !/\s$/.test(text) && !/^\s/.test(item.str)) text += ' ';
-      text += item.str;
-      end = item.transform[4] + item.width;
-    }
-    return text.trim();
-  }).filter(Boolean);
 }
 function layoutLines(pages) {
   // Only explicit "line N" prefixes and recognizable, repeated page labels.
@@ -91,9 +42,6 @@ function layoutLines(pages) {
     const margin = text.match(/^line\s*\d+(?:\s+|$)/i)?.[0] || '';
     return {text, ignored, margin, layoutLabel:ignored};
   }));
-}
-export function cleanLayoutLabels(pages) {
-  return layoutLines(pages).map(lines => lines.filter(line => !line.ignored).map(line => line.text.slice(line.margin.length)).join('\n'));
 }
 export function makeDocument(pages, name, pageStrikes=[], pageFormatting=[], words=null) {
   let offset = 0;
@@ -221,60 +169,6 @@ export function makeDocument(pages, name, pageStrikes=[], pageFormatting=[], wor
     const span=mergedStrikes[strikeIndex];return !span||span.start>=token.end;
   });
   return {name, pages:pages.length, rawPages:pages, blocks, text, tokens, effectiveTokens, struck, excluded, comparisonExcluded, wrappedWords, spelling:[], changeLocations:{},...(jrBoxes.length?{jrBoxes}:{})};
-}
-export function spellingCandidates(doc) {
-  let rangeIndex=0;
-  const guidePhrases=[...guidePhraseSpellingRanges(doc),...statuteChapterSpellingRanges(doc),...numberedSubchapterSpellingRanges(doc)].sort((a,b)=>a.start-b.start);let phraseIndex=0;
-  // Alphabetic clause labels are structural identifiers, not spelling words.
-  // Require a leading marker sequence or an explicit legal reference label;
-  // ordinary prose and parenthetical words retain their spelling checks.
-  const clauseMarkers=new Set();
-  const addMarkers=(text,start)=>{for(const m of text.matchAll(/\(([a-z]{1,2})\)/g))clauseMarkers.add(start+m.index+1);};
-  for(const block of doc.blocks){
-    const start=block.start+(block.margin?.length||0),body=doc.text.slice(start,block.end);
-    const leading=/^\s*(?:\((?:\d+|[A-Za-z]{1,2}|[ivxIVX]+)\)\s*)+/.exec(body);
-    if(leading)addMarkers(leading[0],start);
-  }
-  const referenceParts=[];let referenceCursor=0;
-  for(const range of doc.excluded){referenceParts.push(doc.text.slice(referenceCursor,range.start),' '.repeat(range.end-range.start));referenceCursor=range.end;}
-  referenceParts.push(doc.text.slice(referenceCursor));
-  for(const m of referenceParts.join('').matchAll(/\b(?:subdivisions?|subparagraphs?|paragraphs?|clauses?)\s+\([a-z]{1,2}\)(?:\s*(?:,\s*(?:(?:and|or)\s+)?|(?:and|or|to|through)\s+)\([a-z]{1,2}\))*/gi))addMarkers(m[0],m.index);
-  // PDF small-cap headings may extract as lowercase. Exempt only CALIFORNIA
-  // in the legislature masthead, leaving ordinary occurrences checkable.
-  const mastheadWords=doc.blocks.filter(b=>b.page===1).slice(0,8).flatMap(block=>{
-    if(block.margin||!/^california\s+legislature\b/i.test(block.text))return [];
-    const end='california'.length,runs=block.formatting?.runs||[];
-    if(!Array.from({length:end},(_,i)=>i).every(i=>runs.some(r=>r.smallCaps&&r.start<=i&&r.end>i)))return [];
-    return [{start:block.start,end:block.start+end}];
-  });
-  const wraps=doc.wrappedWords||[];
-  const compounds=Array.from(doc.text.matchAll(compoundPattern),m=>({word:m[0],start:m.index,end:m.index+m[0].length}));
-  let wrapIndex=0;
-  let compoundIndex=0;
-  const candidates=[...wraps,...compounds,...Array.from(doc.text.matchAll(/\p{L}+(?:[’']\p{L}+)*/gu), match => ({word:match[0], start:match.index, end:match.index+match[0].length})).filter(w=>{
-    while(wrapIndex<wraps.length&&wraps[wrapIndex].end<=w.start)wrapIndex++;
-    while(compoundIndex<compounds.length&&compounds[compoundIndex].end<=w.start)compoundIndex++;
-    const r=wraps[wrapIndex],c=compounds[compoundIndex];return (!r||r.start>=w.end)&&(!c||c.start>=w.end);
-  })].sort((a,b)=>a.start-b.start);
-  return candidates.filter(word => {
-    while(phraseIndex<guidePhrases.length&&guidePhrases[phraseIndex].end<=word.start)phraseIndex++;
-    const phrase=guidePhrases[phraseIndex];
-    if(phrase&&word.start>=phrase.start&&word.end<=phrase.end)return false;
-    if(clauseMarkers.has(word.start))return false;
-    // A correct numeric ordinal's suffix is not a separately spelled word.
-    // Keep standalone letters, embedded codes and malformed suffixes reviewable.
-    if(/^(?:st|nd|rd|th)$/i.test(word.word)){
-      const number=/(?<![\p{L}\p{N}_])\d+$/u.exec(doc.text.slice(Math.max(0,word.start-30),word.start));
-      if(number){
-        const lastTwo=Number(number[0].slice(-2)),last=lastTwo%10;
-        const suffix=lastTwo>=11&&lastTwo<=13?'th':({1:'st',2:'nd',3:'rd'}[last]||'th');
-        if(word.word.toLowerCase()===suffix)return false;
-      }
-    }
-    while (rangeIndex<doc.excluded.length && doc.excluded[rangeIndex].end<=word.start) rangeIndex++;
-    const range=doc.excluded[rangeIndex];
-    return (!range || word.end<=range.start || word.start>=range.end || word.parts&&word.start<range.start) && !(word.word.length>1 && word.word===word.word.toUpperCase()) && !mastheadWords.some(r=>r.start===word.start&&r.end===word.end);
-  });
 }
 export function activeText(doc){
   const ranges=[...(doc.struck||[])].sort((a,b)=>a.start-b.start);

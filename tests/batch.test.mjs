@@ -9,7 +9,7 @@ const bill=(id,number,date,body=text)=>make(id,number+' '+id+'.pdf',body,{billId
 const amends=(id,number,date,body=instruction)=>make(id,number+' AMENDS '+id+'.pdf',body,{billId:number,kind:'amendments',date});
 
 test('output names omit the year while source dates remain complete and valid',()=>{
- assert.equal(outputFilename('AB 1982','2026-03-25'),'AB 1982 March 25 Amends In.pdf');assert.equal(outputFilename('SB879','2024-02-29'),'SB 879 February 29 Amends In.pdf');
+ assert.equal(outputFilename('AB 1982','2026-03-25'),'AB 1982 March 25 AMENDS IN.pdf');assert.equal(outputFilename('SB879','2024-02-29'),'SB 879 February 29 AMENDS IN.pdf');
  for(const date of ['2026-02-29','2026-04-31','2026-00-01','2026-01-00','26-03-25','2026-3-25','not a date']){assert.equal(validDate(date),false,date);assert.equal(outputFilename('AB 1982',date),'',date);}assert.equal(outputFilename('../AB 1','2026-03-25'),'');
 });
 
@@ -24,7 +24,7 @@ test('administrative header word-spacing losses never hide a conflicting bill id
 
 test('batch grouping handles multiple bills and inverse-looking filename counters using dated content',()=>{
  const entries=[bill('v99','AB 1982','2026-03-01'),bill('v98','AB 1982','2026-03-25','line 1 The period is 45 days.'),amends('a','AB 1982','2026-03-25'),bill('s-v99','SB 879','2026-03-02'),bill('s-v98','SB 879','2026-03-26','line 1 The period is 45 days.'),amends('s-a','SB 879','2026-03-26')];
- const before=JSON.stringify(entries),groups=analyzeBatch(entries);assert.equal(groups.length,2);assert.ok(groups.every(g=>g.ready));assert.equal(groups[0].previous.id,'v99');assert.ok(groups.every(g=>g.current===null&&!Object.hasOwn(g.assignment,'currentId')));assert.equal(groups[1].previous.id,'s-v99');assert.equal(groups[0].outputFilename,'AB 1982 March 25 Amends In.pdf');assert.equal(JSON.stringify(entries),before);
+ const before=JSON.stringify(entries),groups=analyzeBatch(entries);assert.equal(groups.length,2);assert.ok(groups.every(g=>g.ready));assert.equal(groups[0].previous.id,'v99');assert.ok(groups.every(g=>g.current===null&&!Object.hasOwn(g.assignment,'currentId')));assert.equal(groups[1].previous.id,'s-v99');assert.equal(groups[0].outputFilename,'AB 1982 March 25 AMENDS IN.pdf');assert.equal(JSON.stringify(entries),before);
 });
 
 test('version counters or changed wording never select a bill by cross-checking another version',()=>{
@@ -46,7 +46,7 @@ test('same bill month and day in different years explicitly blocks colliding fil
  for(const [previous,instructions]of [[older,a],[newer,b]]){const [group]=analyzeBatch([previous,instructions]);assert.equal(group.ready,true,JSON.stringify(group.issues));assert.equal(group.previous.id,previous.id);}
  const groups=analyzeBatch([older,newer,a,b],{'amendments:a25':{previousId:'p25'},'amendments:a26':{previousId:'p26'}});
  assert.equal(groups.length,2);assert.deepEqual(groups.map(g=>g.date),['2025-03-25','2026-03-25']);assert.deepEqual(groups.map(g=>g.dateLabel),['March 25, 2025','March 25, 2026']);assert.deepEqual(groups.map(g=>g.previous.id),['p25','p26']);
- for(const group of groups){assert.equal(group.outputFilename,'AB 1982 March 25 Amends In.pdf');assert.equal(group.ready,false);assert.equal(group.status,'needs-review');assert.deepEqual(group.issues.map(i=>i.code),['OUTPUT_FILENAME_COLLISION']);}
+ for(const group of groups){assert.equal(group.outputFilename,'AB 1982 March 25 AMENDS IN.pdf');assert.equal(group.ready,false);assert.equal(group.status,'needs-review');assert.deepEqual(group.issues.map(i=>i.code),['OUTPUT_FILENAME_COLLISION']);}
 });
 
 test('insertion payload dates cannot silently become an amendment-set date',()=>{
@@ -84,8 +84,13 @@ test('a prior-edition instruction heading or explicit previous filename resolves
  const named=make('p','AB 1982 previous.pdf',text),other=make('u','AB 1982 v98.pdf','line 1 The period is 45 days.');[g]=analyzeBatch([other,named,amends('a','AB 1982','2026-03-25')]);assert.equal(g.previous.id,'p');assert.equal(g.ready,true,JSON.stringify(g.issues));
 });
 
-test('explicit date and role conflicts remain visible instead of silently picking another bill',()=>{
- for(const previous of [bill('p','AB 1982','2026-03-26'),make('p','AB 1982 current.pdf',text)]){const [g]=analyzeBatch([previous,amends('a','AB 1982','2026-03-25')]);assert.equal(g.ready,false);assert.ok(g.issues.some(i=>/PREVIOUS_.*CONFLICT/.test(i.code)));}
+test('a supplied bill dated after the amendment set is accepted when its source locations resolve',()=>{
+ const previous=bill('p','AB 1982','2026-03-26'),[g]=analyzeBatch([previous,amends('a','AB 1982','2026-03-25')]);assert.equal(g.ready,true,JSON.stringify(g.issues));assert.equal(g.previous.id,'p');assert.equal(g.outputFilename,'AB 1982 March 25 AMENDS IN.pdf');assert.ok(!g.issues.some(i=>i.code==='PREVIOUS_DATE_CONFLICT'));
+ const [missing]=analyzeBatch([previous,amends('a','AB 1982','2026-03-25','Amendment 1\nOn page 1, in line 1, strike out “absent wording”.')]);assert.equal(missing.ready,false);assert.ok(missing.issues.some(i=>i.code==='SOURCE_LOCATION_UNRESOLVED'));assert.ok(!missing.issues.some(i=>i.code==='PREVIOUS_DATE_CONFLICT'));
+});
+
+test('explicit edition and role conflicts remain visible instead of silently picking another bill',()=>{
+ const [named]=analyzeBatch([make('p','AB 1982 current.pdf',text),amends('a','AB 1982','2026-03-25')]);assert.equal(named.ready,false);assert.ok(named.issues.some(i=>i.code==='PREVIOUS_FILENAME_CONFLICT'));
  const a=amends('a','AB 1982','2026-03-25','AMENDMENTS TO ASSEMBLY BILL NO. 1982\nAS AMENDED IN ASSEMBLY MARCH 1, 2026\n'+instruction),[g]=analyzeBatch([bill('p','AB 1982','2026-03-02'),a]);assert.equal(g.ready,false);assert.ok(g.issues.some(i=>i.code==='PREVIOUS_EDITION_CONFLICT'));
  const bad=make('a','AB 1982 AMENDS.pdf','ASSEMBLY BILL NO. 1982\nMarch 25, 2026\nAn act relating to reporting.');assert.ok(classifyEntry(bad).issues.some(i=>i.code==='DOCUMENT_KIND_CONFLICT'));
 });

@@ -23,9 +23,9 @@
     <section id="import-progress" class="progress-panel" hidden><p id="import-status" role="status"></p><progress id="read-progress" max="1" value="0"></progress><button id="cancel-import" type="button" class="secondary">Cancel remaining files</button></section>
     <p id="app-status" class="app-status" role="status" aria-live="polite"></p>
     <section id="batch-results" hidden aria-labelledby="results-title">
-      <div class="section-heading"><div><h2 id="results-title">Your batch</h2><p id="batch-summary"></p></div><div class="actions"><button id="review-files" class="secondary" type="button">Review files</button><button id="retry-output" class="secondary" type="button">Retry pending PDFs</button><button id="clear-batch" class="secondary" type="button">Clear batch</button></div></div>
+      <div class="section-heading"><div><h2 id="results-title">Amends In Files Created</h2><p id="batch-summary"></p></div><div class="actions"><button id="review-files" class="secondary" type="button">Review Files</button><button id="retry-output" class="secondary" type="button">Retry pending PDFs</button><button id="clear-batch" class="secondary" type="button" title="Clear loaded files and previews">Clear Cache</button></div></div>
       <div id="attention-notice" class="notice warning" hidden><div><h3 id="attention-title"></h3><p>Open an issue to see its amendment in the original PDF. PDFs with unresolved marks are identified below.</p></div><button id="review-issues" class="secondary" type="button">Review issues</button></div>
-      <div id="group-list" class="group-list"></div>
+      <ol id="group-list" class="group-list"></ol>
       <section id="import-errors" class="notice error" hidden><h3>Files that could not be read</h3><ul id="import-error-list"></ul></section>
     </section>
     <section id="file-labels" class="file-labels" hidden aria-labelledby="file-labels-title"><div class="section-heading"><div><h2 id="file-labels-title">Uploaded files</h2><p>Use these controls if a filename is incomplete or a file needs to be replaced.</p></div><button id="close-file-labels" type="button" class="secondary">Close</button></div><div id="file-label-list"></div></section>

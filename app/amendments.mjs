@@ -408,7 +408,7 @@ function testPatch(patch,expectedTokens,origins,map,previous,current,prevDoc,cur
   }
   return {status,orderingViolation,previousOffset,previousEndOffset,currentOffset,currentEndOffset,currentDeletionRanges,...(patch.digest?{previousDeletionRanges:requestedDigestChanges.previousRanges,previousInsertionPoints:requestedDigestChanges.previousInsertionPoints,currentAdditionRanges:displayedDigestChanges.currentRanges}:{}),currentPage:block?.page,currentLine:block?.margin?.trim()||'',expected:expected.join(' '),actual:textOf(currentDoc,current,currentStart,currentEnd),original:textOf(prevDoc,previous,oldStart,oldEnd),expectedParts,actualParts,differenceRanges,missingPoints,discrepancies:amendmentDiscrepancies(wordingDiff,current,currentStart)};
 }
-export function amendmentPlan(instructionText,prevDoc,currentDoc,externalDocs={},digestDoc=null){
+export function amendmentPlan(instructionText,prevDoc,currentDoc,externalDocs={},digestDoc=null,{buildExpected=true}={}){
   const instructions=instructionText.trim()?parseAmendments(instructionText):[];
   const ordered=digestDoc?[digestRule(digestDoc),...instructions]:instructions;
   const rules=ordered.map(rule=>{
@@ -433,6 +433,9 @@ export function amendmentPlan(instructionText,prevDoc,currentDoc,externalDocs={}
   }
   const previous=prevDoc.effectiveTokens||prevDoc.tokens,current=currentDoc.effectiveTokens||currentDoc.tokens;
   const patches=all.filter(edit=>!compiled.find(r=>r.number===edit.rule)?.error).sort((a,b)=>a.start-b.start||a.end-b.end);
+  // PDF marking needs only resolved original targets. Current-version checking
+  // additionally builds a full expected revision and one origin per word.
+  if(!buildExpected)return {compiled,previous,current,patches,expectedTokens:[],origins:[]};
   const expectedTokens=[],origins=[];let cursor=0;
   const copy=until=>{for(;cursor<until;cursor++){expectedTokens.push(previous[cursor]);origins.push({start:cursor,end:cursor+1});}};
   for(const patch of patches){
