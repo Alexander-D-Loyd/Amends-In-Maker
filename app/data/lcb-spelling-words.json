@@ -1,0 +1,1742 @@
+{
+  "authority": "LCB Style Manual, updated February 1, 2019",
+  "sourceFile": "lcb-stylemanual-2019.pdf",
+  "sourceSha256": "ae0ef412dafe30a3257d891b221cdbb3f371b7a9f51cbe363051739735cb9688",
+  "scope": "Exact single-word forms explicitly listed in the LCB spelling and hyphenation tables (pages 3–5 and 9–15), plus the exact proper word Caltrans (page 18), Medi-Cal and 22 identified regular noun plurals from source-listed noun examples. Category labels, prefix instructions and multiword expressions are omitted. Lowercase entries accept initial capitalization and possessives; Medi-Cal keeps its exact internal capitalization. Spelling acceptance does not establish correct meaning, grammatical role, guide agreement, or Merriam-Webster first-spelling ordering.",
+  "words": [
+    {
+      "word": "abridgment",
+      "page": 3,
+      "sourceEntry": "abridgment"
+    },
+    {
+      "word": "accessory",
+      "page": 3,
+      "sourceEntry": "accessory"
+    },
+    {
+      "word": "accommodate",
+      "page": 3,
+      "sourceEntry": "accommodate"
+    },
+    {
+      "word": "acknowledgment",
+      "page": 3,
+      "sourceEntry": "acknowledgment"
+    },
+    {
+      "word": "adjuster",
+      "page": 3,
+      "sourceEntry": "adjuster (pref.)"
+    },
+    {
+      "word": "advice",
+      "page": 3,
+      "sourceEntry": "advice (n.)"
+    },
+    {
+      "word": "advise",
+      "page": 3,
+      "sourceEntry": "advise (v.)"
+    },
+    {
+      "word": "adviser",
+      "page": 3,
+      "sourceEntry": "adviser"
+    },
+    {
+      "word": "aerator",
+      "page": 3,
+      "sourceEntry": "aerator"
+    },
+    {
+      "word": "anytime",
+      "page": 3,
+      "sourceEntry": "anytime (adv.)"
+    },
+    {
+      "word": "appellate",
+      "page": 3,
+      "sourceEntry": "appellate"
+    },
+    {
+      "word": "assigner",
+      "page": 3,
+      "sourceEntry": "assigner"
+    },
+    {
+      "word": "attachés",
+      "page": 3,
+      "sourceEntry": "attachés"
+    },
+    {
+      "word": "aural",
+      "page": 3,
+      "sourceEntry": "aural"
+    },
+    {
+      "word": "benefited",
+      "page": 3,
+      "sourceEntry": "benefited"
+    },
+    {
+      "word": "biannual",
+      "page": 3,
+      "sourceEntry": "biannual (twice a yr.)"
+    },
+    {
+      "word": "biennial",
+      "page": 3,
+      "sourceEntry": "biennial (every 2 yrs.)"
+    },
+    {
+      "word": "bifurcation",
+      "page": 3,
+      "sourceEntry": "bifurcation"
+    },
+    {
+      "word": "born",
+      "page": 3,
+      "sourceEntry": "born (birth)"
+    },
+    {
+      "word": "borne",
+      "page": 3,
+      "sourceEntry": "borne (carried)"
+    },
+    {
+      "word": "bullion",
+      "page": 3,
+      "sourceEntry": "bullion (metal)"
+    },
+    {
+      "word": "buses",
+      "page": 3,
+      "sourceEntry": "buses"
+    },
+    {
+      "word": "calendar",
+      "page": 3,
+      "sourceEntry": "calendar"
+    },
+    {
+      "word": "caliber",
+      "page": 3,
+      "sourceEntry": "caliber"
+    },
+    {
+      "word": "canceled",
+      "page": 3,
+      "sourceEntry": "canceled"
+    },
+    {
+      "word": "canceling",
+      "page": 3,
+      "sourceEntry": "canceling"
+    },
+    {
+      "word": "cancellation",
+      "page": 3,
+      "sourceEntry": "cancellation"
+    },
+    {
+      "word": "cannot",
+      "page": 3,
+      "sourceEntry": "cannot"
+    },
+    {
+      "word": "canvas",
+      "page": 3,
+      "sourceEntry": "canvas (cloth)"
+    },
+    {
+      "word": "canvass",
+      "page": 3,
+      "sourceEntry": "canvass (solicit)"
+    },
+    {
+      "word": "capital",
+      "page": 3,
+      "sourceEntry": "capital"
+    },
+    {
+      "word": "capitol",
+      "page": 3,
+      "sourceEntry": "capitol (building)"
+    },
+    {
+      "word": "catalog",
+      "page": 3,
+      "sourceEntry": "catalog"
+    },
+    {
+      "word": "cemetery",
+      "page": 3,
+      "sourceEntry": "cemetery"
+    },
+    {
+      "word": "chairperson",
+      "page": 3,
+      "sourceEntry": "chairperson"
+    },
+    {
+      "word": "collectible",
+      "page": 3,
+      "sourceEntry": "collectible"
+    },
+    {
+      "word": "commingle",
+      "page": 3,
+      "sourceEntry": "commingle"
+    },
+    {
+      "word": "commitment",
+      "page": 3,
+      "sourceEntry": "commitment"
+    },
+    {
+      "word": "committed",
+      "page": 3,
+      "sourceEntry": "committed"
+    },
+    {
+      "word": "complement",
+      "page": 3,
+      "sourceEntry": "complement (complete)"
+    },
+    {
+      "word": "compliment",
+      "page": 3,
+      "sourceEntry": "compliment (praise)"
+    },
+    {
+      "word": "confectionery",
+      "page": 3,
+      "sourceEntry": "confectionery"
+    },
+    {
+      "word": "controlled",
+      "page": 3,
+      "sourceEntry": "controlled"
+    },
+    {
+      "word": "counseled",
+      "page": 3,
+      "sourceEntry": "counseled"
+    },
+    {
+      "word": "credentialed",
+      "page": 3,
+      "sourceEntry": "credentialed"
+    },
+    {
+      "word": "decedent",
+      "page": 3,
+      "sourceEntry": "decedent"
+    },
+    {
+      "word": "descendant",
+      "page": 3,
+      "sourceEntry": "descendant"
+    },
+    {
+      "word": "device",
+      "page": 3,
+      "sourceEntry": "device (contrivance)"
+    },
+    {
+      "word": "devise",
+      "page": 3,
+      "sourceEntry": "devise (convey)"
+    },
+    {
+      "word": "discreet",
+      "page": 3,
+      "sourceEntry": "discreet (prudent)"
+    },
+    {
+      "word": "discrete",
+      "page": 3,
+      "sourceEntry": "discrete (distinct)"
+    },
+    {
+      "word": "divisible",
+      "page": 3,
+      "sourceEntry": "divisible"
+    },
+    {
+      "word": "eleemosynary",
+      "page": 3,
+      "sourceEntry": "eleemosynary"
+    },
+    {
+      "word": "eligible",
+      "page": 3,
+      "sourceEntry": "eligible"
+    },
+    {
+      "word": "ensure",
+      "page": 3,
+      "sourceEntry": "ensure (guarantee)"
+    },
+    {
+      "word": "executor",
+      "page": 3,
+      "sourceEntry": "executor"
+    },
+    {
+      "word": "exhibitory",
+      "page": 3,
+      "sourceEntry": "exhibitory"
+    },
+    {
+      "word": "fiance",
+      "page": 4,
+      "sourceEntry": "fiance (masc., fem.)"
+    },
+    {
+      "word": "forego",
+      "page": 4,
+      "sourceEntry": "forego (precede)"
+    },
+    {
+      "word": "foregone",
+      "page": 4,
+      "sourceEntry": "foregone"
+    },
+    {
+      "word": "foreseen",
+      "page": 4,
+      "sourceEntry": "foreseen"
+    },
+    {
+      "word": "foreword",
+      "page": 4,
+      "sourceEntry": "foreword (preface)"
+    },
+    {
+      "word": "forfeiture",
+      "page": 4,
+      "sourceEntry": "forfeiture"
+    },
+    {
+      "word": "forgo",
+      "page": 4,
+      "sourceEntry": "forgo (do without)"
+    },
+    {
+      "word": "forward",
+      "page": 4,
+      "sourceEntry": "forward (ahead)"
+    },
+    {
+      "word": "germane",
+      "page": 4,
+      "sourceEntry": "germane"
+    },
+    {
+      "word": "guarantee",
+      "page": 4,
+      "sourceEntry": "guarantee (v.)"
+    },
+    {
+      "word": "guaranty",
+      "page": 4,
+      "sourceEntry": "guaranty (n.)"
+    },
+    {
+      "word": "inclosure",
+      "page": 4,
+      "sourceEntry": "inclosure (horse racing)"
+    },
+    {
+      "word": "includable",
+      "page": 4,
+      "sourceEntry": "includable"
+    },
+    {
+      "word": "indorsement",
+      "page": 4,
+      "sourceEntry": "indorsement (used in Commercial \nCode)"
+    },
+    {
+      "word": "insure",
+      "page": 4,
+      "sourceEntry": "insure (relating to insurance)"
+    },
+    {
+      "word": "interment",
+      "page": 4,
+      "sourceEntry": "interment (burial)"
+    },
+    {
+      "word": "internment",
+      "page": 4,
+      "sourceEntry": "internment (prison)"
+    },
+    {
+      "word": "intradistrict",
+      "page": 4,
+      "sourceEntry": "intradistrict"
+    },
+    {
+      "word": "inure",
+      "page": 4,
+      "sourceEntry": "inure (accrue)"
+    },
+    {
+      "word": "inurn",
+      "page": 4,
+      "sourceEntry": "inurn (entomb)"
+    },
+    {
+      "word": "irrelevant",
+      "page": 4,
+      "sourceEntry": "irrelevant"
+    },
+    {
+      "word": "judgment",
+      "page": 4,
+      "sourceEntry": "judgment"
+    },
+    {
+      "word": "kidnapping",
+      "page": 4,
+      "sourceEntry": "kidnapping"
+    },
+    {
+      "word": "knowledgeable",
+      "page": 4,
+      "sourceEntry": "knowledgeable"
+    },
+    {
+      "word": "license",
+      "page": 4,
+      "sourceEntry": "license"
+    },
+    {
+      "word": "liquefied",
+      "page": 4,
+      "sourceEntry": "liquefied"
+    },
+    {
+      "word": "liter",
+      "page": 4,
+      "sourceEntry": "liter"
+    },
+    {
+      "word": "marijuana",
+      "page": 4,
+      "sourceEntry": "marijuana"
+    },
+    {
+      "word": "marshal",
+      "page": 4,
+      "sourceEntry": "marshal"
+    },
+    {
+      "word": "meter",
+      "page": 4,
+      "sourceEntry": "meter"
+    },
+    {
+      "word": "mileage",
+      "page": 4,
+      "sourceEntry": "mileage"
+    },
+    {
+      "word": "misspell",
+      "page": 4,
+      "sourceEntry": "misspell"
+    },
+    {
+      "word": "misstate",
+      "page": 4,
+      "sourceEntry": "misstate"
+    },
+    {
+      "word": "miter",
+      "page": 4,
+      "sourceEntry": "miter"
+    },
+    {
+      "word": "mobilehomes",
+      "page": 4,
+      "sourceEntry": "mobilehomes"
+    },
+    {
+      "word": "modeled",
+      "page": 4,
+      "sourceEntry": "modeled"
+    },
+    {
+      "word": "moneys",
+      "page": 4,
+      "sourceEntry": "moneys"
+    },
+    {
+      "word": "movable",
+      "page": 4,
+      "sourceEntry": "movable"
+    },
+    {
+      "word": "occurred",
+      "page": 4,
+      "sourceEntry": "occurred"
+    },
+    {
+      "word": "occurrence",
+      "page": 4,
+      "sourceEntry": "occurrence"
+    },
+    {
+      "word": "offense",
+      "page": 4,
+      "sourceEntry": "offense"
+    },
+    {
+      "word": "ombudsperson",
+      "page": 4,
+      "sourceEntry": "ombudsperson"
+    },
+    {
+      "word": "paneled",
+      "page": 4,
+      "sourceEntry": "paneled"
+    },
+    {
+      "word": "parimutuel",
+      "page": 4,
+      "sourceEntry": "parimutuel"
+    },
+    {
+      "word": "payer",
+      "page": 4,
+      "sourceEntry": "payer"
+    },
+    {
+      "word": "peremptory",
+      "page": 4,
+      "sourceEntry": "peremptory (decisive)"
+    },
+    {
+      "word": "perspective",
+      "page": 4,
+      "sourceEntry": "perspective (view)"
+    },
+    {
+      "word": "photojournalism",
+      "page": 4,
+      "sourceEntry": "photojournalism"
+    },
+    {
+      "word": "pleaded",
+      "page": 4,
+      "sourceEntry": "pleaded"
+    },
+    {
+      "word": "preceding",
+      "page": 4,
+      "sourceEntry": "preceding"
+    },
+    {
+      "word": "preemptory",
+      "page": 4,
+      "sourceEntry": "preemptory (preference)"
+    },
+    {
+      "word": "principal",
+      "page": 4,
+      "sourceEntry": "principal (chief)"
+    },
+    {
+      "word": "principle",
+      "page": 4,
+      "sourceEntry": "principle (rule)"
+    },
+    {
+      "word": "privilege",
+      "page": 4,
+      "sourceEntry": "privilege"
+    },
+    {
+      "word": "proceeding",
+      "page": 5,
+      "sourceEntry": "proceeding"
+    },
+    {
+      "word": "prospective",
+      "page": 5,
+      "sourceEntry": "prospective (expected)"
+    },
+    {
+      "word": "queue",
+      "page": 5,
+      "sourceEntry": "queue"
+    },
+    {
+      "word": "ratable",
+      "page": 5,
+      "sourceEntry": "ratable"
+    },
+    {
+      "word": "recidivism",
+      "page": 5,
+      "sourceEntry": "recidivism"
+    },
+    {
+      "word": "recyclable",
+      "page": 5,
+      "sourceEntry": "recyclable"
+    },
+    {
+      "word": "relevant",
+      "page": 5,
+      "sourceEntry": "relevant"
+    },
+    {
+      "word": "rescission",
+      "page": 5,
+      "sourceEntry": "rescission (rescind)"
+    },
+    {
+      "word": "residuum",
+      "page": 5,
+      "sourceEntry": "residuum"
+    },
+    {
+      "word": "résumé",
+      "page": 5,
+      "sourceEntry": "résumé"
+    },
+    {
+      "word": "reviver",
+      "page": 5,
+      "sourceEntry": "reviver"
+    },
+    {
+      "word": "salable",
+      "page": 5,
+      "sourceEntry": "salable"
+    },
+    {
+      "word": "screwdriver",
+      "page": 5,
+      "sourceEntry": "screwdriver"
+    },
+    {
+      "word": "separate",
+      "page": 5,
+      "sourceEntry": "separate"
+    },
+    {
+      "word": "settlor",
+      "page": 5,
+      "sourceEntry": "settlor"
+    },
+    {
+      "word": "solely",
+      "page": 5,
+      "sourceEntry": "solely"
+    },
+    {
+      "word": "stationary",
+      "page": 5,
+      "sourceEntry": "stationary (fixed)"
+    },
+    {
+      "word": "stationery",
+      "page": 5,
+      "sourceEntry": "stationery (paper)"
+    },
+    {
+      "word": "subpoena",
+      "page": 5,
+      "sourceEntry": "subpoena"
+    },
+    {
+      "word": "supersede",
+      "page": 5,
+      "sourceEntry": "supersede"
+    },
+    {
+      "word": "tattoo",
+      "page": 5,
+      "sourceEntry": "tattoo"
+    },
+    {
+      "word": "tenant",
+      "page": 5,
+      "sourceEntry": "tenant (occupant)"
+    },
+    {
+      "word": "tenet",
+      "page": 5,
+      "sourceEntry": "tenet (doctrine)"
+    },
+    {
+      "word": "therefore",
+      "page": 5,
+      "sourceEntry": "therefore (now, therefore, be it)"
+    },
+    {
+      "word": "threshold",
+      "page": 5,
+      "sourceEntry": "threshold"
+    },
+    {
+      "word": "torpor",
+      "page": 5,
+      "sourceEntry": "torpor"
+    },
+    {
+      "word": "totaled",
+      "page": 5,
+      "sourceEntry": "totaled"
+    },
+    {
+      "word": "totaling",
+      "page": 5,
+      "sourceEntry": "totaling"
+    },
+    {
+      "word": "tradable",
+      "page": 5,
+      "sourceEntry": "tradable"
+    },
+    {
+      "word": "trafficking",
+      "page": 5,
+      "sourceEntry": "trafficking"
+    },
+    {
+      "word": "transferable",
+      "page": 5,
+      "sourceEntry": "transferable"
+    },
+    {
+      "word": "transferred",
+      "page": 5,
+      "sourceEntry": "transferred"
+    },
+    {
+      "word": "traveled",
+      "page": 5,
+      "sourceEntry": "traveled"
+    },
+    {
+      "word": "underserved",
+      "page": 5,
+      "sourceEntry": "underserved"
+    },
+    {
+      "word": "warranty",
+      "page": 5,
+      "sourceEntry": "warranty"
+    },
+    {
+      "word": "wholly",
+      "page": 5,
+      "sourceEntry": "wholly"
+    },
+    {
+      "word": "willful",
+      "page": 5,
+      "sourceEntry": "willful"
+    },
+    {
+      "word": "willfully",
+      "page": 5,
+      "sourceEntry": "willfully"
+    },
+    {
+      "word": "aboveground",
+      "page": 9,
+      "sourceEntry": "aboveground"
+    },
+    {
+      "word": "aftermarket",
+      "page": 9,
+      "sourceEntry": "aftermarket"
+    },
+    {
+      "word": "audiovideo",
+      "page": 9,
+      "sourceEntry": "audiovideo"
+    },
+    {
+      "word": "audiovisual",
+      "page": 9,
+      "sourceEntry": "audiovisual"
+    },
+    {
+      "word": "backup",
+      "page": 9,
+      "sourceEntry": "backup (n., u.m.)"
+    },
+    {
+      "word": "barbershop",
+      "page": 9,
+      "sourceEntry": "barbershop"
+    },
+    {
+      "word": "bodybuilding",
+      "page": 9,
+      "sourceEntry": "bodybuilding"
+    },
+    {
+      "word": "breastfeeding",
+      "page": 9,
+      "sourceEntry": "breastfeeding"
+    },
+    {
+      "word": "buildup",
+      "page": 9,
+      "sourceEntry": "buildup (n., u.m.)"
+    },
+    {
+      "word": "bylaws",
+      "page": 9,
+      "sourceEntry": "bylaws"
+    },
+    {
+      "word": "byproduct",
+      "page": 9,
+      "sourceEntry": "byproduct"
+    },
+    {
+      "word": "caregiver",
+      "page": 9,
+      "sourceEntry": "caregiver"
+    },
+    {
+      "word": "carjacking",
+      "page": 9,
+      "sourceEntry": "carjacking"
+    },
+    {
+      "word": "carpool",
+      "page": 9,
+      "sourceEntry": "carpool"
+    },
+    {
+      "word": "caseworker",
+      "page": 9,
+      "sourceEntry": "caseworker"
+    },
+    {
+      "word": "cashflow",
+      "page": 9,
+      "sourceEntry": "cashflow"
+    },
+    {
+      "word": "catchup",
+      "page": 9,
+      "sourceEntry": "catchup (n., u.m.)"
+    },
+    {
+      "word": "childcare",
+      "page": 9,
+      "sourceEntry": "childcare (n., u.m.)"
+    },
+    {
+      "word": "childproofing",
+      "page": 9,
+      "sourceEntry": "childproofing"
+    },
+    {
+      "word": "cleanup",
+      "page": 9,
+      "sourceEntry": "cleanup (n., u.m.)"
+    },
+    {
+      "word": "clearinghouse",
+      "page": 9,
+      "sourceEntry": "clearinghouse"
+    },
+    {
+      "word": "coinsurance",
+      "page": 9,
+      "sourceEntry": "coinsurance"
+    },
+    {
+      "word": "colocate",
+      "page": 9,
+      "sourceEntry": "colocate"
+    },
+    {
+      "word": "commonsense",
+      "page": 9,
+      "sourceEntry": "commonsense (u.m.)"
+    },
+    {
+      "word": "cooperation",
+      "page": 9,
+      "sourceEntry": "cooperation"
+    },
+    {
+      "word": "coowner",
+      "page": 10,
+      "sourceEntry": "coowner"
+    },
+    {
+      "word": "copayment",
+      "page": 10,
+      "sourceEntry": "copayment"
+    },
+    {
+      "word": "counterterrorism",
+      "page": 10,
+      "sourceEntry": "counterterrorism"
+    },
+    {
+      "word": "coursework",
+      "page": 10,
+      "sourceEntry": "coursework"
+    },
+    {
+      "word": "coworker",
+      "page": 10,
+      "sourceEntry": "coworker"
+    },
+    {
+      "word": "creditworthiness",
+      "page": 10,
+      "sourceEntry": "creditworthiness"
+    },
+    {
+      "word": "crossbones",
+      "page": 10,
+      "sourceEntry": "crossbones"
+    },
+    {
+      "word": "databank",
+      "page": 10,
+      "sourceEntry": "databank"
+    },
+    {
+      "word": "database",
+      "page": 10,
+      "sourceEntry": "database"
+    },
+    {
+      "word": "daycare",
+      "page": 10,
+      "sourceEntry": "daycare"
+    },
+    {
+      "word": "downpayment",
+      "page": 10,
+      "sourceEntry": "downpayment"
+    },
+    {
+      "word": "driveby",
+      "page": 10,
+      "sourceEntry": "driveby (n., u.m.)"
+    },
+    {
+      "word": "email",
+      "page": 10,
+      "sourceEntry": "email"
+    },
+    {
+      "word": "factfinders",
+      "page": 10,
+      "sourceEntry": "factfinders"
+    },
+    {
+      "word": "feepayer",
+      "page": 10,
+      "sourceEntry": "feepayer"
+    },
+    {
+      "word": "firehose",
+      "page": 10,
+      "sourceEntry": "firehose"
+    },
+    {
+      "word": "floorspace",
+      "page": 10,
+      "sourceEntry": "floorspace"
+    },
+    {
+      "word": "followup",
+      "page": 10,
+      "sourceEntry": "followup (n., u.m.)"
+    },
+    {
+      "word": "guidebook",
+      "page": 10,
+      "sourceEntry": "guidebook"
+    },
+    {
+      "word": "guidelines",
+      "page": 10,
+      "sourceEntry": "guidelines"
+    },
+    {
+      "word": "highrise",
+      "page": 11,
+      "sourceEntry": "highrise"
+    },
+    {
+      "word": "homeowner",
+      "page": 11,
+      "sourceEntry": "homeowner"
+    },
+    {
+      "word": "hookup",
+      "page": 11,
+      "sourceEntry": "hookup (n., u.m.)"
+    },
+    {
+      "word": "hotline",
+      "page": 11,
+      "sourceEntry": "hotline"
+    },
+    {
+      "word": "infrastructure",
+      "page": 11,
+      "sourceEntry": "infrastructure"
+    },
+    {
+      "word": "inpatient",
+      "page": 11,
+      "sourceEntry": "inpatient"
+    },
+    {
+      "word": "inservice",
+      "page": 11,
+      "sourceEntry": "inservice"
+    },
+    {
+      "word": "interstate",
+      "page": 11,
+      "sourceEntry": "interstate"
+    },
+    {
+      "word": "intrastate",
+      "page": 11,
+      "sourceEntry": "intrastate"
+    },
+    {
+      "word": "junkpile",
+      "page": 11,
+      "sourceEntry": "junkpile"
+    },
+    {
+      "word": "kilowatthour",
+      "page": 11,
+      "sourceEntry": "kilowatthour"
+    },
+    {
+      "word": "kiwifruit",
+      "page": 11,
+      "sourceEntry": "kiwifruit"
+    },
+    {
+      "word": "landfill",
+      "page": 11,
+      "sourceEntry": "landfill"
+    },
+    {
+      "word": "landowner",
+      "page": 11,
+      "sourceEntry": "landowner"
+    },
+    {
+      "word": "layoff",
+      "page": 11,
+      "sourceEntry": "layoff (n., u.m.)"
+    },
+    {
+      "word": "longstanding",
+      "page": 11,
+      "sourceEntry": "longstanding"
+    },
+    {
+      "word": "longsuffering",
+      "page": 11,
+      "sourceEntry": "longsuffering"
+    },
+    {
+      "word": "marketplace",
+      "page": 11,
+      "sourceEntry": "marketplace"
+    },
+    {
+      "word": "Medi-Cal",
+      "page": 11,
+      "sourceEntry": "Medi-Cal"
+    },
+    {
+      "word": "megawatthour",
+      "page": 12,
+      "sourceEntry": "megawatthour"
+    },
+    {
+      "word": "mobilehome",
+      "page": 12,
+      "sourceEntry": "mobilehome"
+    },
+    {
+      "word": "mockup",
+      "page": 12,
+      "sourceEntry": "mockup (n., u.m.)"
+    },
+    {
+      "word": "mudslide",
+      "page": 12,
+      "sourceEntry": "mudslide"
+    },
+    {
+      "word": "nameplate",
+      "page": 12,
+      "sourceEntry": "nameplate"
+    },
+    {
+      "word": "nonclassified",
+      "page": 12,
+      "sourceEntry": "nonclassified"
+    },
+    {
+      "word": "nonexempt",
+      "page": 12,
+      "sourceEntry": "nonexempt"
+    },
+    {
+      "word": "nonprofit",
+      "page": 12,
+      "sourceEntry": "nonprofit"
+    },
+    {
+      "word": "offset",
+      "page": 12,
+      "sourceEntry": "offset"
+    },
+    {
+      "word": "onetime",
+      "page": 12,
+      "sourceEntry": "onetime (formerly; u.m.)"
+    },
+    {
+      "word": "ongoing",
+      "page": 12,
+      "sourceEntry": "ongoing"
+    },
+    {
+      "word": "online",
+      "page": 12,
+      "sourceEntry": "online (u.m.)"
+    },
+    {
+      "word": "outpatient",
+      "page": 12,
+      "sourceEntry": "outpatient"
+    },
+    {
+      "word": "outweigh",
+      "page": 12,
+      "sourceEntry": "outweigh"
+    },
+    {
+      "word": "passthrough",
+      "page": 12,
+      "sourceEntry": "passthrough (n., u.m.)"
+    },
+    {
+      "word": "patrolperson",
+      "page": 12,
+      "sourceEntry": "patrolperson"
+    },
+    {
+      "word": "phaseout",
+      "page": 12,
+      "sourceEntry": "phaseout (n., u.m.)"
+    },
+    {
+      "word": "pipeline",
+      "page": 12,
+      "sourceEntry": "pipeline"
+    },
+    {
+      "word": "postcard",
+      "page": 13,
+      "sourceEntry": "postcard"
+    },
+    {
+      "word": "postgraduate",
+      "page": 13,
+      "sourceEntry": "postgraduate (n., u.m.)"
+    },
+    {
+      "word": "postsecondary",
+      "page": 13,
+      "sourceEntry": "postsecondary"
+    },
+    {
+      "word": "powerplant",
+      "page": 13,
+      "sourceEntry": "powerplant"
+    },
+    {
+      "word": "racetrack",
+      "page": 13,
+      "sourceEntry": "racetrack"
+    },
+    {
+      "word": "ratesetting",
+      "page": 13,
+      "sourceEntry": "ratesetting"
+    },
+    {
+      "word": "recordkeeping",
+      "page": 13,
+      "sourceEntry": "recordkeeping"
+    },
+    {
+      "word": "reelect",
+      "page": 13,
+      "sourceEntry": "reelect"
+    },
+    {
+      "word": "restroom",
+      "page": 13,
+      "sourceEntry": "restroom"
+    },
+    {
+      "word": "runoff",
+      "page": 13,
+      "sourceEntry": "runoff (n., u.m.)"
+    },
+    {
+      "word": "safekeeping",
+      "page": 13,
+      "sourceEntry": "safekeeping"
+    },
+    {
+      "word": "schoolage",
+      "page": 13,
+      "sourceEntry": "schoolage"
+    },
+    {
+      "word": "schoolbus",
+      "page": 13,
+      "sourceEntry": "schoolbus"
+    },
+    {
+      "word": "schoolbuses",
+      "page": 13,
+      "sourceEntry": "schoolbus",
+      "sourceWord": "schoolbus",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "schoolchildren",
+      "page": 13,
+      "sourceEntry": "schoolchildren"
+    },
+    {
+      "word": "schoolday",
+      "page": 13,
+      "sourceEntry": "schoolday"
+    },
+    {
+      "word": "seatbelt",
+      "page": 13,
+      "sourceEntry": "seatbelt"
+    },
+    {
+      "word": "semiautomatic",
+      "page": 13,
+      "sourceEntry": "semiautomatic"
+    },
+    {
+      "word": "setoff",
+      "page": 13,
+      "sourceEntry": "setoff (n., u.m.)"
+    },
+    {
+      "word": "sewerline",
+      "page": 13,
+      "sourceEntry": "sewerline"
+    },
+    {
+      "word": "socioeconomic",
+      "page": 13,
+      "sourceEntry": "socioeconomic"
+    },
+    {
+      "word": "standby",
+      "page": 13,
+      "sourceEntry": "standby (n., u.m.)"
+    },
+    {
+      "word": "startup",
+      "page": 13,
+      "sourceEntry": "startup (n., u.m.)"
+    },
+    {
+      "word": "stepsister",
+      "page": 13,
+      "sourceEntry": "stepsister (etc.)"
+    },
+    {
+      "word": "streamflow",
+      "page": 13,
+      "sourceEntry": "streamflow"
+    },
+    {
+      "word": "subcommittee",
+      "page": 13,
+      "sourceEntry": "subcommittee"
+    },
+    {
+      "word": "taxpayer",
+      "page": 13,
+      "sourceEntry": "taxpayer"
+    },
+    {
+      "word": "textbook",
+      "page": 13,
+      "sourceEntry": "textbook"
+    },
+    {
+      "word": "timeframe",
+      "page": 13,
+      "sourceEntry": "timeframe"
+    },
+    {
+      "word": "timeline",
+      "page": 13,
+      "sourceEntry": "timeline"
+    },
+    {
+      "word": "tortfeasor",
+      "page": 13,
+      "sourceEntry": "tortfeasor"
+    },
+    {
+      "word": "trawlnet",
+      "page": 14,
+      "sourceEntry": "trawlnet"
+    },
+    {
+      "word": "videoconferencing",
+      "page": 14,
+      "sourceEntry": "videoconferencing"
+    },
+    {
+      "word": "videogames",
+      "page": 14,
+      "sourceEntry": "videogames"
+    },
+    {
+      "word": "videotape",
+      "page": 14,
+      "sourceEntry": "videotape"
+    },
+    {
+      "word": "watercourses",
+      "page": 14,
+      "sourceEntry": "watercourses"
+    },
+    {
+      "word": "waterflow",
+      "page": 14,
+      "sourceEntry": "waterflow"
+    },
+    {
+      "word": "webmaster",
+      "page": 14,
+      "sourceEntry": "webmaster"
+    },
+    {
+      "word": "website",
+      "page": 14,
+      "sourceEntry": "website"
+    },
+    {
+      "word": "websites",
+      "page": 14,
+      "sourceEntry": "website",
+      "sourceWord": "website",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "weeklong",
+      "page": 14,
+      "sourceEntry": "weeklong (u.m.)"
+    },
+    {
+      "word": "workday",
+      "page": 14,
+      "sourceEntry": "workday"
+    },
+    {
+      "word": "workforce",
+      "page": 14,
+      "sourceEntry": "workforce"
+    },
+    {
+      "word": "workstudy",
+      "page": 14,
+      "sourceEntry": "workstudy"
+    },
+    {
+      "word": "yearend",
+      "page": 14,
+      "sourceEntry": "yearend"
+    },
+    {
+      "word": "airborne",
+      "page": 15,
+      "sourceEntry": "airborne"
+    },
+    {
+      "word": "areawide",
+      "page": 15,
+      "sourceEntry": "areawide"
+    },
+    {
+      "word": "bloodborne",
+      "page": 15,
+      "sourceEntry": "bloodborne"
+    },
+    {
+      "word": "bondholder",
+      "page": 15,
+      "sourceEntry": "bondholder"
+    },
+    {
+      "word": "bondholders",
+      "page": 15,
+      "sourceEntry": "bondholder",
+      "sourceWord": "bondholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "caseload",
+      "page": 15,
+      "sourceEntry": "caseload"
+    },
+    {
+      "word": "caseloads",
+      "page": 15,
+      "sourceEntry": "caseload",
+      "sourceWord": "caseload",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "communitywide",
+      "page": 15,
+      "sourceEntry": "communitywide"
+    },
+    {
+      "word": "countywide",
+      "page": 15,
+      "sourceEntry": "countywide"
+    },
+    {
+      "word": "credentialholder",
+      "page": 15,
+      "sourceEntry": "credentialholder"
+    },
+    {
+      "word": "credentialholders",
+      "page": 15,
+      "sourceEntry": "credentialholder",
+      "sourceWord": "credentialholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "decisionmaker",
+      "page": 15,
+      "sourceEntry": "decisionmaker"
+    },
+    {
+      "word": "decisionmakers",
+      "page": 15,
+      "sourceEntry": "decisionmaker",
+      "sourceWord": "decisionmaker",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "diemaker",
+      "page": 15,
+      "sourceEntry": "diemaker"
+    },
+    {
+      "word": "diemakers",
+      "page": 15,
+      "sourceEntry": "diemaker",
+      "sourceWord": "diemaker",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "districtwide",
+      "page": 15,
+      "sourceEntry": "districtwide"
+    },
+    {
+      "word": "groundwater",
+      "page": 15,
+      "sourceEntry": "groundwater"
+    },
+    {
+      "word": "homesite",
+      "page": 15,
+      "sourceEntry": "homesite"
+    },
+    {
+      "word": "homesites",
+      "page": 15,
+      "sourceEntry": "homesite",
+      "sourceWord": "homesite",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "hospitalwide",
+      "page": 15,
+      "sourceEntry": "hospitalwide"
+    },
+    {
+      "word": "leaseholder",
+      "page": 15,
+      "sourceEntry": "leaseholder"
+    },
+    {
+      "word": "leaseholders",
+      "page": 15,
+      "sourceEntry": "leaseholder",
+      "sourceWord": "leaseholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "licenseholder",
+      "page": 15,
+      "sourceEntry": "licenseholder"
+    },
+    {
+      "word": "licenseholders",
+      "page": 15,
+      "sourceEntry": "licenseholder",
+      "sourceWord": "licenseholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "lienholder",
+      "page": 15,
+      "sourceEntry": "lienholder"
+    },
+    {
+      "word": "lienholders",
+      "page": 15,
+      "sourceEntry": "lienholder",
+      "sourceWord": "lienholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "nationwide",
+      "page": 15,
+      "sourceEntry": "nationwide"
+    },
+    {
+      "word": "offsite",
+      "page": 15,
+      "sourceEntry": "offsite"
+    },
+    {
+      "word": "onsite",
+      "page": 15,
+      "sourceEntry": "onsite"
+    },
+    {
+      "word": "parklands",
+      "page": 15,
+      "sourceEntry": "parklands"
+    },
+    {
+      "word": "peakload",
+      "page": 15,
+      "sourceEntry": "peakload"
+    },
+    {
+      "word": "peakloads",
+      "page": 15,
+      "sourceEntry": "peakload",
+      "sourceWord": "peakload",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "permitholder",
+      "page": 15,
+      "sourceEntry": "permitholder"
+    },
+    {
+      "word": "permitholders",
+      "page": 15,
+      "sourceEntry": "permitholder",
+      "sourceWord": "permitholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "policyholder",
+      "page": 15,
+      "sourceEntry": "policyholder"
+    },
+    {
+      "word": "policyholders",
+      "page": 15,
+      "sourceEntry": "policyholder",
+      "sourceWord": "policyholder",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "policymaker",
+      "page": 15,
+      "sourceEntry": "policymaker"
+    },
+    {
+      "word": "policymakers",
+      "page": 15,
+      "sourceEntry": "policymaker",
+      "sourceWord": "policymaker",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "ratemaking",
+      "page": 15,
+      "sourceEntry": "ratemaking"
+    },
+    {
+      "word": "saltwater",
+      "page": 15,
+      "sourceEntry": "saltwater"
+    },
+    {
+      "word": "schoolsite",
+      "page": 15,
+      "sourceEntry": "schoolsite"
+    },
+    {
+      "word": "schoolsites",
+      "page": 15,
+      "sourceEntry": "schoolsite",
+      "sourceWord": "schoolsite",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "statewide",
+      "page": 15,
+      "sourceEntry": "statewide"
+    },
+    {
+      "word": "stormwater",
+      "page": 15,
+      "sourceEntry": "stormwater"
+    },
+    {
+      "word": "tidelands",
+      "page": 15,
+      "sourceEntry": "tidelands"
+    },
+    {
+      "word": "timberland",
+      "page": 15,
+      "sourceEntry": "timberland"
+    },
+    {
+      "word": "toolmaker",
+      "page": 15,
+      "sourceEntry": "toolmaker"
+    },
+    {
+      "word": "toolmakers",
+      "page": 15,
+      "sourceEntry": "toolmaker",
+      "sourceWord": "toolmaker",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "townsite",
+      "page": 15,
+      "sourceEntry": "townsite"
+    },
+    {
+      "word": "townsites",
+      "page": 15,
+      "sourceEntry": "townsite",
+      "sourceWord": "townsite",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "truckload",
+      "page": 15,
+      "sourceEntry": "truckload"
+    },
+    {
+      "word": "truckloads",
+      "page": 15,
+      "sourceEntry": "truckload",
+      "sourceWord": "truckload",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "wastewater",
+      "page": 15,
+      "sourceEntry": "wastewater"
+    },
+    {
+      "word": "waterborne",
+      "page": 15,
+      "sourceEntry": "waterborne"
+    },
+    {
+      "word": "watermaster",
+      "page": 15,
+      "sourceEntry": "watermaster"
+    },
+    {
+      "word": "watermasters",
+      "page": 15,
+      "sourceEntry": "watermaster",
+      "sourceWord": "watermaster",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "wildland",
+      "page": 15,
+      "sourceEntry": "wildland"
+    },
+    {
+      "word": "workload",
+      "page": 15,
+      "sourceEntry": "workload"
+    },
+    {
+      "word": "workloads",
+      "page": 15,
+      "sourceEntry": "workload",
+      "sourceWord": "workload",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "worksite",
+      "page": 15,
+      "sourceEntry": "worksite"
+    },
+    {
+      "word": "worksites",
+      "page": 15,
+      "sourceEntry": "worksite",
+      "sourceWord": "worksite",
+      "derivation": "Regular noun plural"
+    },
+    {
+      "word": "Caltrans",
+      "page": 18,
+      "sourceEntry": "Caltrans"
+    }
+  ]
+}

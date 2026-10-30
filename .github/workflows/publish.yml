@@ -1,0 +1,53 @@
+name: Publish verified Windows package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/release-receipts/1.0.0.json
+      - .github/release-receipts/1.0.0.package-manifest.json
+
+concurrency:
+  group: amends-in-maker-release-1.0.0
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Alexander-D-Loyd/Amends-In-Maker' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      AMENDS_IN_PYTHON: python
+      AMENDS_IN_TEST_PYTHON: python
+    steps:
+      - name: Preserve verified receipt bytes
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '11.25.0'
+          run_install: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore pinned dependencies and local PDF assets
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          node node_modules/electron/install.js
+          node scripts/setup-assets.cjs
+      - name: Run standalone source and release checks
+        run: pnpm test
+      - name: Reconstruct the exact tested Windows ZIP
+        run: node scripts/publish-release.cjs --prepare .github/release-receipts/1.0.0.json
+      - name: Publish verified ZIP and checksum as latest
+        run: node scripts/publish-release.cjs --publish .github/release-receipts/1.0.0.json
+        env:
+          GH_TOKEN: ${{ github.token }}

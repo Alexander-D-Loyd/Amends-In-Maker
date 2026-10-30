@@ -1,0 +1,16 @@
+node_modules/
+dist/
+qa-output/
+app/vendor/*
+!app/vendor/diff/
+!app/vendor/diff/**
+!app/vendor/diff-LICENSE
+!app/vendor/typo-ocr.mjs
+!app/vendor/typo-LICENSE
+!app/vendor/en_US/
+app/vendor/en_US/*
+!app/vendor/en_US/index.dic
+!app/vendor/en_US/index.aff
+!app/vendor/en_US/license
+*.log
+.DS_Store

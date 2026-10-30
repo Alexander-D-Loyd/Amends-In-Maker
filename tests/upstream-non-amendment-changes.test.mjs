@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {makeDocument} from '../app/core.mjs';
+import {verifyAmendments,nonAmendmentEdits} from '../app/amendments.mjs';
+const previous=makeDocument(['line 1 SEC. 1. Remove this section.\nline 2 SEC. 2. Keep this section.'],'previous');
+const instruction='Amendment 1\nOn page 1, strike out line 1.';
+const current=makeDocument(['line 1 SEC. 2. Keep this section.'],'current');
+const verify=doc=>verifyAmendments(instruction,previous,doc);
+assert.equal(verify(current)[0].status,'implemented');
+assert.deepEqual(nonAmendmentEdits(instruction,previous,current,verify(current)).ranges,[[],[]]);
+const extra=makeDocument(['line 1 SEC. 2. Change this section.'],'extra');
+const edits=nonAmendmentEdits(instruction,previous,extra,verify(extra));
+assert.deepEqual(edits.ranges.map((ranges,side)=>ranges.map(r=>[previous,extra][side].text.slice(r.start,r.end))),[['Keep'],['Change']]);
+const heading=makeDocument(['line 1 SECTION 2. Keep this section.'],'heading');
+const genuine=nonAmendmentEdits(instruction,previous,heading,verify(heading));
+assert.ok(genuine.ranges[0].some(r=>previous.text.slice(r.start,r.end)==='SEC'),'Uninstructed SEC edits must still be flagged');
+console.log('PASS: repeated SEC tokens do not create false non-amendment edits; genuine uninstructed wording and SEC edits remain visible');

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {makeDocument,activeText} from '../app/core.mjs';
+import {verifyAmendments} from '../app/amendments.mjs';
+const previous=makeDocument(['line 1 Before.\nline 2 Remove A.\nline 3 Remove B.','line 1 Entire old page.','line 1 Remove C.\nline 2 SEC. 5.\nline 3 After.'],'previous');
+const instruction='Amendment 1\nOn page 1, strike out lines 2 to 3, inclusive, strike out page 2, on page 3, strike out line 1, in line 2, strike out “SEC. 5.” and insert:\nSECTION 1.';
+const correct=makeDocument(['line 1 Before.\nline 2 SECTION 1.\nline 3 After.'],'current');
+const check=doc=>verifyAmendments(instruction,previous,doc)[0];
+assert.equal(check(correct).status,'implemented');
+assert.equal(check(previous).status,'not-implemented');
+assert.notEqual(check(makeDocument(['line 1 Before.\nline 2 Entire old page.\nline 3 SECTION 1.\nline 4 After.'],'wrong')).status,'implemented');
+assert.equal(verifyAmendments(instruction.replace('page 2,','page 9,'),previous,correct)[0].status,'needs-review');
+assert.equal(verifyAmendments(instruction.replace('lines 2 to 3','lines 2 to 99'),previous,correct)[0].status,'needs-review');
+assert.equal(verifyAmendments(instruction.replace('strike out page 2','remove page 2'),previous,correct)[0].status,'needs-review');
+const raw='Amendment 1\nOn page 1, after “Before” insert:\nold new';
+const start=raw.indexOf('old new');
+const text=activeText({text:raw,struck:[{start,end:start+3}]});
+assert.ok(text.endsWith('    new'));
+assert.equal(verifyAmendments(text,makeDocument(['line 1 Before end.'],'old'),makeDocument(['line 1 Before new end.'],'new'))[0].status,'implemented');
+console.log('PASS: compound full deletion/replacement, retained deleted text fails, missing page/line endpoints and unsupported subclauses need review, amendment-source strikeouts excluded');
+

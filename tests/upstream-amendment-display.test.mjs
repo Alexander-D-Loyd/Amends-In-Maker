@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {amendmentDisplays,parseAmendments} from '../app/amendments.mjs';
+import {activeText} from '../app/core.mjs';
+const text='Amendment 1\nOn page 1, in line 1, after “Before” insert:\nFirst old new.\n08/20/26 01:58 PM\n77677 RN 26 21037 PAGE 2\nSubstantive\nSecond stale fresh.\nAmendment 2\nOn page 1, strike out “gone”.\n- 0 -';
+const struck=['old','stale'].map(word=>({start:text.indexOf(word),end:text.indexOf(word)+word.length}));
+const doc={text,struck};
+const [first,second]=amendmentDisplays(doc);
+assert.equal(first.payload.text,'First old new.\nSecond stale fresh.');
+assert.deepEqual(first.payload.strikes.map(r=>first.payload.text.slice(r.start,r.end)),['old','stale']);
+assert.equal(first.directive.text,'On page 1, in line 1, after “Before” insert:');
+assert.equal(second.payload.text,'');
+const active=parseAmendments(activeText(doc))[0].insertText;
+assert.ok(!active.includes('old')&&!active.includes('stale'));
+assert.ok(active.includes('new')&&active.includes('fresh'));
+console.log('PASS: original strikeouts preserved in multi-page display, footer removal keeps ranges aligned, active verification text omits crossed words, deletion-only display stays empty');

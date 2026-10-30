@@ -1,0 +1,195 @@
+{
+  "repository": "https://github.com/Alexander-D-Loyd/Document-Compare",
+  "commit": "0cdcc7051fdeed406f4295abb45f9bf1f75b007e",
+  "scope": "Selected amendment parsing, source-text reading, layout and OCR helpers. No stylistic or language-checking application UI or engines are included.",
+  "files": [
+    {
+      "path": "app/amendment-comma-anchor.mjs",
+      "sha256": "f4e1310f3fa112b8053d25106e6d6e69d4efd3d0d2628cd29d5c1128f5ce62ed"
+    },
+    {
+      "path": "app/amendment-discrepancies.mjs",
+      "sha256": "6c31d50dd9f242d8b8c8769d43a2f3eba6c97cbb79ba8e09addf44e9e4b6e44e"
+    },
+    {
+      "path": "app/amendment-end-marker.mjs",
+      "sha256": "dbba24448b049a1dbb36a9030a446b58ec5b7a2d13291876046c9e3c9d8fb1c4"
+    },
+    {
+      "path": "app/amendment-jr-box.mjs",
+      "sha256": "4f072bb4175d7edbe3c0ee6ef6e3eb0be4f1da51d2926796f234c0aa0ca57cc6"
+    },
+    {
+      "path": "app/amendment-markings.mjs",
+      "sha256": "7433c60171c60ceb858e980eb289d3c1c2ba6a417a39c023dce0b8f301bfffe5"
+    },
+    {
+      "path": "app/amendment-metadata.mjs",
+      "sha256": "777e078611276492ec4f58976b620fffe8adfd776268865ac7c0e805d7301dfd"
+    },
+    {
+      "path": "app/amendment-period-anchor.mjs",
+      "sha256": "f800cc7a420957b243f725b875d8165e833ca26df61c6a0dbaa8bb37a382cc24"
+    },
+    {
+      "path": "app/amendment-word-diff.mjs",
+      "sha256": "12a7bfebc47339d5a3ac0b4346dc9e516b6f9759164f1ac09c1d1d7d4fb2893a"
+    },
+    {
+      "path": "app/amendments.mjs",
+      "sha256": "d6aba2ff63de1097a4d801071ca7a29c20c1fb27295d874f8db1f03d859d2e8b"
+    },
+    {
+      "path": "app/bill-ocr-margins.mjs",
+      "sha256": "ab1c4222ac7122ae9cde53890f714d3b73903b13772ea6463d707669a68130b6"
+    },
+    {
+      "path": "app/bill-ocr-policy.mjs",
+      "sha256": "0f101800ec98b32944d87aa6d692d65bed1b1f7cfca3b7bd8622c8dfcdefd62b"
+    },
+    {
+      "path": "app/budget-layout.mjs",
+      "sha256": "2263f4a518ee96c5f4675c4c8747fa1908726596cab0d3e8b8bb6792003d3dfc"
+    },
+    {
+      "path": "app/change-scope.mjs",
+      "sha256": "b04aaf99b2d9e16a4b095b8594c2eabaf2d8651b02ba9c16df4dc442e6b9fae3"
+    },
+    {
+      "path": "app/core.mjs",
+      "sha256": "bed304c25a4fd1893ac695a278b9a53fda01ac7a126fbbc79b42d7ed02fa4dc0"
+    },
+    {
+      "path": "app/correct-pdf-reading.mjs",
+      "sha256": "5a8a0b7facee6476b011767ea1110e53429fb75d1526dc4d588028d6481dac6b"
+    },
+    {
+      "path": "app/data/guide-spelling-phrases.json",
+      "sha256": "cee26d9b62b03b982219a436f260793c342c9ec027d209a2bff7f5286b02e097"
+    },
+    {
+      "path": "app/data/lcb-spelling-words.json",
+      "sha256": "2dbf40193c542224f63b09d9f71ac83e4404c18984e1e088f1111468ba9f54c1"
+    },
+    {
+      "path": "app/digest-amendment.mjs",
+      "sha256": "2a3dc03a059f4cef41553044cc56c52d753c046d5a74d9955243d5aed28d531c"
+    },
+    {
+      "path": "app/digest-delta.mjs",
+      "sha256": "bfe1964a10387c977d98518d4b1e5b62ec94abeaae70baeffadd897fb82e936c"
+    },
+    {
+      "path": "app/external-amendments.mjs",
+      "sha256": "73fd9ae6cb2e3d0311fab9393be631c1c043293525530d6962e4f981516fa247"
+    },
+    {
+      "path": "app/history-rows.mjs",
+      "sha256": "1a0e1038a43c033c8bf393218548bde4137c347793b4f980ea3492d2b1bb7ac1"
+    },
+    {
+      "path": "app/ocr-clause-markers.mjs",
+      "sha256": "2f250952faba4418b3f5e57780ef6f7f8de17cbaf76fc88a01a415241ed2a838"
+    },
+    {
+      "path": "app/ocr-embedded-agreement.mjs",
+      "sha256": "63370da4180b41ccfc7342216951f806f4c5d1c10721b9e4ba8b5639578bdfca"
+    },
+    {
+      "path": "app/ocr-text.mjs",
+      "sha256": "ad5d68a67d88030832460a2c18fe6e3c92eb63424f7146d62e652c20204ba9c3"
+    },
+    {
+      "path": "app/offline-ocr.mjs",
+      "sha256": "3aec590c298d11cab30a15a815d3df9284235b28378b91c330ce3ebaa29c2f22"
+    },
+    {
+      "path": "app/pdf-font-style.mjs",
+      "sha256": "4d66c9bc7f40cc79ab45f1e5c85fcd2e758c70ff315503ce98fb27bcff8ee32c"
+    },
+    {
+      "path": "app/pdf-page-quality.mjs",
+      "sha256": "861994ded4e751cc97ab48ca589c1be0210d7a56eadd7b4f16c75b3e7787b20c"
+    },
+    {
+      "path": "app/pdf-reading-quality.mjs",
+      "sha256": "97e53834641c5cf43c4ec136fb9d1b6cfb6d6fc735d60be7d7ef0606f8586144"
+    },
+    {
+      "path": "app/pdf-strike-glyphs.mjs",
+      "sha256": "25f2ad9ab00d22745b447480c6ed5b023d9cad329e4275805d5a37dfb6e0ca0f"
+    },
+    {
+      "path": "app/pdf-strikes.mjs",
+      "sha256": "be5a17ea939bdf431d1c4429554e000d5e03e9d90522658371b83db3abae37fd"
+    },
+    {
+      "path": "app/pdf-text-evidence.mjs",
+      "sha256": "5fc1b049018ad066172a9261872ad85123a6bb70d12d412a04041b4009a3370c"
+    },
+    {
+      "path": "app/read-scanned-instructions.mjs",
+      "sha256": "62bbc43efe21e61fb9905fad8de92032579bd0da7488d38f314b03cf2d7af6b6"
+    },
+    {
+      "path": "app/scanned-amendments.mjs",
+      "sha256": "acfa0483a7920baa4fef313008e4d0899209bd3869dceda7dcf57a79bf508852"
+    },
+    {
+      "path": "app/sequence-diff.mjs",
+      "sha256": "d3f5d4e1174dd93c707bed2c7bc25d206430122f3d837a5b740e69d095ebb1d7"
+    },
+    {
+      "path": "app/spelling-guide-phrases.mjs",
+      "sha256": "d7d75eb957434b3fb120d3d5aeb2a0e3a6490958f9881ddb10e37e9f92441e8c"
+    },
+    {
+      "path": "app/spelling-lcb-numbered-subchapter.mjs",
+      "sha256": "fab96cad5a2238d9769f120162d068a274a1d6fb765c152c79400ef64c8c4968"
+    },
+    {
+      "path": "app/spelling-source-boundaries.mjs",
+      "sha256": "b9bfca3b6fb97f57ebd40a54bb7829f41c7ccccf0946c973b389195c8d8649f6"
+    },
+    {
+      "path": "app/spelling-statute-chapters.mjs",
+      "sha256": "327d7d44338343cb28afddb4c949e7d46139ba0f306d1b1e9ad4b70058ecaea6"
+    },
+    {
+      "path": "app/style-compound-source-boundaries.mjs",
+      "sha256": "eae1af3ad23536393dee8cf1381956b86443a95ce011f13e3751c89d54e466ac"
+    },
+    {
+      "path": "app/style-context.mjs",
+      "sha256": "b3f867980b2bbda16bf0a147ea27660b9bcfe0ee2e2fc144a6dd38171fd32fc7"
+    },
+    {
+      "path": "app/style-document-type.mjs",
+      "sha256": "5d7012def93069d82f1310cd1241ac27fa748d7ab6487aa03fd9738eb587bb9a"
+    },
+    {
+      "path": "app/style-evidence.mjs",
+      "sha256": "b343cd05891d569c4a6d28359516bfe263ea3ab88d80c3c510e376e903e63e83"
+    },
+    {
+      "path": "app/style-single-quote-ranges.mjs",
+      "sha256": "32227b532c814ba88b3487162ba084d5d624affbfa56d63568a433388d2aa8c4"
+    },
+    {
+      "path": "app/style-technical-literals.mjs",
+      "sha256": "6289826e296afb01ef4a9c9544ca0c01575ec427c0065f577880dd1a98f80764"
+    },
+    {
+      "path": "app/style-wrapped-quotes.mjs",
+      "sha256": "50c9cdf78f44fa884c13047c25aa06222f3e00bd31657a2338cbc310abe2abf9"
+    },
+    {
+      "path": "app/vendor/diff/diff/array.js",
+      "sha256": "ed0e3769e91640c56d9e0ab46593c543d49e20086f005e2a60569d650a95b208"
+    },
+    {
+      "path": "app/vendor/ocr/tesseract.esm.min.js",
+      "sha256": "64871d76c75609fd5413b88a8171e2ef40deedd77d5875ba23df104b2d05eb29"
+    }
+  ]
+}

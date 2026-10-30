@@ -1,0 +1,23 @@
+{
+  "name": "amends-in-maker",
+  "productName": "Amends In Maker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "main.cjs",
+  "description": "Offline batch PDF amendment markup for California legislative bills",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.mjs",
+    "postinstall": "node scripts/setup-assets.cjs",
+    "package": "node scripts/package-windows.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "pdfjs-dist": "6.4.299",
+    "pdf-lib": "1.17.1",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "scope": "Exact complete phrases explicitly printed in the bundled style manuals. This supplement is not a dictionary, preferred-sense authority, capitalization validator or permission to accept their component words in other contexts.",
+  "phrases": [
+    {
+      "phrase": "ad valorem",
+      "guide": "lcb",
+      "page": 3
+    },
+    {
+      "phrase": "de minimis",
+      "guide": "lcb",
+      "page": 3
+    },
+    {
+      "phrase": "ex officio",
+      "guide": "lcb",
+      "page": 3
+    },
+    {
+      "phrase": "inter vivos",
+      "guide": "lcb",
+      "page": 4
+    },
+    {
+      "phrase": "pro rata",
+      "guide": "lcb",
+      "page": 4
+    },
+    {
+      "phrase": "bona fide",
+      "guide": "lcb",
+      "page": 9
+    },
+    {
+      "phrase": "per capita",
+      "guide": "lcb",
+      "page": 12
+    },
+    {
+      "phrase": "per diem",
+      "guide": "lcb",
+      "page": 12
+    },
+    {
+      "phrase": "post mortem",
+      "guide": "lcb",
+      "page": 13
+    },
+    {
+      "phrase": "et seq.",
+      "guide": "lcb",
+      "page": 22
+    },
+    {
+      "phrase": "prima facie",
+      "guide": "gpo",
+      "page": 117
+    },
+    {
+      "phrase": "et al.",
+      "guide": "gpo",
+      "page": 255
+    },
+    {
+      "phrase": "Cosumnes River",
+      "guide": "lcb",
+      "page": 3,
+      "sourceEntry": "Cosumnes (River or College)"
+    },
+    {
+      "phrase": "Cosumnes College",
+      "guide": "lcb",
+      "page": 3,
+      "sourceEntry": "Cosumnes (River or College)"
+    },
+    {
+      "phrase": "papier mache",
+      "guide": "lcb",
+      "page": 4
+    },
+    {
+      "phrase": "rollcall vote",
+      "guide": "lcb",
+      "page": 13
+    },
+    {
+      "phrase": "CalWORKs program",
+      "guide": "lcb",
+      "page": 18
+    },
+    {
+      "phrase": "Counties of Riverside and Yolo",
+      "guide": "lcb",
+      "page": 18
+    },
+    {
+      "phrase": "E. coli",
+      "guide": "lcb",
+      "page": 18
+    },
+    {
+      "phrase": "President pro Tempore",
+      "guide": "lcb",
+      "page": 19
+    }
+  ]
+}

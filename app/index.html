@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Amends In Maker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header"><div><h1>Amends In Maker</h1><p>Batch amendment markup</p></div><span class="local-note">PDFs stay on this computer</span></header>
+  <main>
+    <section id="drop-zone" class="drop-zone" aria-label="Upload bill and amendment PDFs">
+      <div><h2>Drop bill versions and amendment PDFs together</h2><p>Multiple bills at once. Match files, review the previous-version pages, then create the marked PDFs.</p></div>
+      <button id="choose-files" type="button" disabled>Choose PDFs</button><input id="file-input" type="file" accept=".pdf,application/pdf" multiple hidden>
+    </section>
+    <div id="import-progress" class="import-progress" hidden><div><p id="import-status" role="status"></p><progress id="read-progress" max="1" value="0" aria-label="PDF reading progress"></progress></div><button id="cancel-import" type="button" class="secondary">Cancel remaining files</button></div>
+    <div class="batch-toolbar"><p id="batch-summary" role="status">No files loaded.</p><div><button id="review-files" type="button" class="secondary" disabled>Review file labels</button><button id="clear-batch" type="button" class="secondary" disabled>Clear batch</button></div></div>
+    <section id="import-errors" class="notice error" aria-label="Files that could not be read" hidden><h2>Files that could not be read</h2><ul id="import-error-list"></ul></section>
+    <section id="file-labels" class="file-labels" aria-label="Review file labels" hidden><div class="section-heading"><div><h2>File labels</h2><p>Correct only after checking the original PDF. Dates are document dates, never file download or modification dates.</p></div><button id="close-file-labels" type="button" class="secondary">Close</button></div><div id="file-label-list"></div></section>
+    <div class="workspace">
+      <aside class="batch-sidebar"><div class="sidebar-heading"><h2>Bills to create</h2><label><input id="select-ready" type="checkbox" disabled> Select ready bills</label></div><div id="group-list" class="group-list"><p class="empty-message">Your bills will appear here.</p></div></aside>
+      <section class="review-pane" aria-labelledby="selected-bill">
+        <div id="empty-state" class="empty-state"><h2>Start with your PDF files</h2><p>Load the previous bill, corresponding amendments, and current bill when available. Clear source matches are marked on a copy of the previous PDF.</p><p>Uncertain locations, missing documents and conflicting file labels remain available for review.</p></div>
+        <div id="group-review" hidden>
+          <div class="review-heading"><div><h2 id="selected-bill"></h2><p id="selected-date"></p></div><span id="group-status" class="status-badge"></span></div>
+          <dl id="group-files" class="group-files"></dl>
+          <details id="assignment-details"><summary>Review bill, date and file pairing</summary><form id="assignment-form" class="assignment-form"><label>Bill number<input id="assignment-bill" type="text" placeholder="AB 1982" required maxlength="14"></label><label>Amendment date<input id="assignment-date" type="date" required></label><label>Previous version<select id="assignment-previous" required></select></label><label>Current version for cross-check<select id="assignment-current"></select></label><label class="wide">Amendments<select id="assignment-instructions" required></select></label><p class="form-note wide">Confirm the amendment date and original version from the PDFs. Version numbers alone do not establish chronology.</p><button type="submit">Apply file pairing</button></form></details>
+          <section id="group-issues" class="notice warning" aria-label="Source review and cross-check notes" hidden><h3 id="group-issues-title">This bill needs review</h3><ul id="group-issue-list"></ul></section>
+          <details id="reading-review" class="reading-review" hidden><summary id="reading-review-count">Review PDF readings</summary><p class="form-note">Compare each reading with the original page. Confirm unchanged wording or correct it before creating a marked PDF.</p><div id="reading-review-list"></div></details>
+          <div class="preview-toolbar"><form id="page-form" class="page-navigation"><button id="previous-page" type="button" class="secondary" aria-label="Previous PDF page">←</button><label for="page-number">Page</label><input id="page-number" type="number" min="1" step="1" value="1"><span>of <span id="page-total">0</span></span><button id="next-page" type="button" class="secondary" aria-label="Next PDF page">→</button></form><div class="preview-options"><label>Source<select id="preview-source"></select></label><label>View<select id="preview-mode"><option value="marked">Amendment marks</option><option value="original">Original PDF</option></select></label><label>Zoom<select id="preview-zoom"><option value="fit">Fit width</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option></select></label></div></div>
+          <div class="mark-legend"><span><i class="key yellow"></i>Margin number</span><span><i class="key blue"></i>Insert / strike and insert</span><span><i class="key red"></i>Strike</span><span>Circled number = amendment</span></div>
+          <p id="preview-status" class="preview-status" role="status"></p>
+          <div id="canvas-scroll" class="canvas-scroll"><canvas id="preview-canvas" aria-label="Previous-version PDF with amendment marks"></canvas></div>
+          <details id="amendment-list-details" class="amendment-list-details"><summary id="amendment-count">Amendments</summary><div id="amendment-list"></div></details>
+        </div>
+      </section>
+    </div>
+    <section class="export-bar" aria-label="Create marked PDFs"><div class="export-info"><h2>Output</h2><p id="output-filename">Amends In [Bill Number] [Amendment Date].pdf</p><p class="small-note">One new PDF per selected bill and amendment date. Original files remain unchanged.</p></div><div class="export-actions"><button id="output-folder" type="button" class="secondary" disabled>Choose output folder</button><span id="output-folder-name">Choose a folder when ready.</span><button id="create-pdfs" type="button" disabled>Create PDFs</button></div></section>
+    <p id="app-status" class="app-status" role="status" aria-live="polite"></p>
+    <section id="save-results" class="notice" aria-labelledby="save-results-title" hidden><h2 id="save-results-title">PDF creation results</h2><ul id="save-result-list"></ul></section>
+  </main>
+  <footer class="app-footer"><span>Amends In Maker</span><span>Uncertain readings and unresolved amendments require source review.</span></footer>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

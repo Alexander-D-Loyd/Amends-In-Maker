@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..'),vendor=path.join(root,'app/vendor');fs.mkdirSync(vendor,{recursive:true});
+const pinned={'pdfjs-dist':'6.4.299','pdf-lib':'1.17.1','tesseract.js':'7.0.0','tesseract.js-core':'7.0.0'};
+const packages=Object.fromEntries(Object.entries(pinned).map(([name,version])=>{const file=require.resolve(name+'/package.json'),p=JSON.parse(fs.readFileSync(file,'utf8'));if(p.version!==version)throw Error('Expected '+name+' '+version);return[name,path.dirname(file)];}));
+const copy=(pkg,file,dest)=>fs.copyFileSync(path.join(packages[pkg],file),path.join(vendor,dest));
+for(const dir of ['cmaps','standard_fonts','wasm'])fs.cpSync(path.join(packages['pdfjs-dist'],dir),path.join(vendor,dir),{recursive:true});
+copy('pdfjs-dist','build/pdf.mjs','pdf.mjs');copy('pdfjs-dist','build/pdf.worker.mjs','pdf.worker.mjs');copy('pdfjs-dist','LICENSE','LICENSE');
+copy('pdf-lib','dist/pdf-lib.esm.js','pdf-lib.esm.js');copy('pdf-lib','LICENSE.md','pdf-lib-LICENSE.md');
+const ocr=path.join(vendor,'ocr');fs.mkdirSync(ocr,{recursive:true});
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'ocr-assets.json'),'utf8')),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const mappings={'tesseract.esm.min.js':['tesseract.js','dist/tesseract.esm.min.js'],'worker.min.js':['tesseract.js','dist/worker.min.js'],'worker.min.js.LICENSE.txt':['tesseract.js','dist/worker.min.js.LICENSE.txt'],'tesseract.js-LICENSE.txt':['tesseract.js','LICENSE.md'],'tesseract.js-core-LICENSE.txt':['tesseract.js-core','LICENSE']};
+(async()=>{for(const [name,record]of Object.entries(manifest.files)){const dest=path.join(ocr,name);if(fs.existsSync(dest)&&hash(fs.readFileSync(dest))===record.sha256)continue;let bytes;if(name==='eng.traineddata'||name==='tessdata-LICENSE.txt'){const file=name==='eng.traineddata'?name:'LICENSE';const response=await fetch('https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/'+manifest.tessdata_fast_commit+'/'+file);if(!response.ok)throw Error('Could not restore '+name);bytes=Buffer.from(await response.arrayBuffer());}else{const [pkg,file]=mappings[name]||['tesseract.js-core',name];bytes=fs.readFileSync(path.join(packages[pkg],file));}if(bytes.length!==record.bytes||hash(bytes)!==record.sha256)throw Error('Pinned OCR integrity mismatch: '+name);fs.writeFileSync(dest,bytes);}fs.copyFileSync(path.join(root,'ocr-assets.json'),path.join(ocr,'MANIFEST.json'));console.log('Restored pinned local PDF, markup and OCR assets. No document content is sent online.');})().catch(e=>{console.error(e.message);process.exitCode=1;});

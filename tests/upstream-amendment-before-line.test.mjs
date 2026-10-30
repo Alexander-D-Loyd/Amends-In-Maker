@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {makeDocument} from '../app/core.mjs';
+import {parseAmendments,verifyAmendments,nonAmendmentEdits} from '../app/amendments.mjs';
+const insertion='SEC. 1. Newly inserted text.';
+test('before line 1 inserts after the unnumbered heading and verifies across shifted pages',()=>{
+ const text=`Amendment 1\nOn page 2, before line 1, insert:\n${insertion}`;
+ const previous=makeDocument(['Bill title.','Chapter heading.\nline 1 Existing provision.\nline 2 Retained ending.'],'previous');
+ const current=makeDocument(['Bill title.','Chapter heading.\nline 1 SEC. 1. Newly inserted','line 1 text.\nline 2 Existing provision.\nline 3 Retained ending.'],'current');
+ assert.equal(parseAmendments(text)[0].beforeLine,1);
+ const results=verifyAmendments(text,previous,current),evidence=results[0].evidence[0];
+ assert.equal(results[0].status,'implemented');
+ assert.equal(evidence.previousOffset,previous.text.indexOf('Existing'));
+ assert.equal(evidence.previousOffset,evidence.previousEndOffset);
+ assert.equal(evidence.currentOffset,current.text.indexOf('SEC.'));
+ assert.deepEqual(nonAmendmentEdits(text,previous,current,results).ranges,[[],[]]);
+ assert.equal(verifyAmendments(text,previous,previous)[0].status,'not-implemented');
+ const wrong=makeDocument(['Bill title.','Chapter heading.\nline 1 SEC. 1. Incorrect text.\nline 2 Existing provision.\nline 3 Retained ending.'],'wrong');
+ assert.equal(verifyAmendments(text,previous,wrong)[0].status,'incorrect');
+});
+test('before-line locations support first-token and blank-line insertions, rejecting missing or ambiguous targets',()=>{
+ const text=`Amendment 1\nBefore line 1, insert:\n${insertion}`;
+ const previous=makeDocument(['line 1 Existing provision.'],'previous');
+ const current=makeDocument([`${insertion}\nline 1 Existing provision.`],'current');
+ assert.equal(verifyAmendments(text,previous,current)[0].status,'implemented');
+ const blank=makeDocument(['Heading.\nline 1\nline 2 Existing provision.'],'blank');
+ const blankCurrent=makeDocument([`Heading.\n${insertion}\nline 2 Existing provision.`],'current');
+ const result=verifyAmendments(text,blank,blankCurrent)[0];
+ assert.equal(result.status,'implemented');assert.equal(result.evidence[0].previousOffset,blank.blocks[1].end);
+ assert.equal(verifyAmendments(text,makeDocument(['line 2 Existing provision.'],'missing'),current)[0].status,'needs-review');
+ assert.equal(verifyAmendments(text,makeDocument(['line 1 Existing provision.','line 1 Other provision.'],'ambiguous'),current)[0].status,'needs-review');
+ assert.equal(verifyAmendments(text.replace('Before line 1','On page 9, before line 1'),previous,current)[0].status,'needs-review');
+});
