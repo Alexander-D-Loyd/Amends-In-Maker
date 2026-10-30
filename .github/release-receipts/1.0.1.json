@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.1",
+  "sourceCommit": "69a030d3edc2cd3b910a7ff3328cf8820043423e",
+  "tag": "v1.0.1",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.1.package-manifest.json",
+  "manifestSHA256": "e9d1fefe3248ea65a33d3ab7430e7a301d31772f3ae248bed114b4bc693b7620",
+  "archiveName": "Amends-In-Maker-Windows-1.0.1.zip",
+  "archiveBytes": 410474227,
+  "archiveSHA256": "899de95fa082b1524086f528ed9bbe86ac5c582e2824623447340faec21b33b9",
+  "startHere": "Amends In Maker 1.0.1\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] Amends In [Date].pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and circled numbers identify amendment locations.\r\nBlue arrows mark insertions; red lines mark strikes; blue lines with\r\nendpoint arrows mark strike-and-insert instructions. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.1",
+  "notes": "The app now follows a simple drop-to-PDF workflow.\n\n- Opens on a file-drop homepage.\n- Matches bill and amendment filenames; no current version is requested.\n- Automatically saves marked PDFs to a remembered, changeable folder.\n- Names outputs AB 1982 Amends In March 25, 2026.pdf (SB is also supported).\n- Reports missing files and unmarked amendments. Clicking an issue opens the original amendment PDF with the affected instruction highlighted.\n- Saves independently verified marks with unmarked amendments clearly reported; whole-file identity, date and reading-integrity problems hold the output.\n\nExtract the complete ZIP and open Amends In Maker/Amends In Maker.exe. Original PDFs stay unchanged; existing outputs are skipped.\n\nValidation: all 135 source tests passed. The actual packaged Windows app passed automatic two-bill export, folder persistence across restart, cancellation, folder change, stale-folder rejection, successful retry, no-overwrite, mixed-success output, exact source-page highlights, rapid popup reopening and truthful skipped-preview checks. All 424 packaged files retained their hashes throughout native testing. Publication requires the exact tested ZIP and manifest checksums."
+}
