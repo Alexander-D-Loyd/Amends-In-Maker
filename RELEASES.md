@@ -1,5 +1,23 @@
 # Published releases
 
+## 1.0.5 — October 30, 2026
+
+[Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.5).
+
+- Outputs now use `AB 1982 March 25 AMENDS IN.pdf`. Every amendment number is boxed.
+- The compact numbered results list is labeled “Amends In Files Created”; controls use “Clear Cache” and “Review Files”. Clearing the cache preserves saved PDFs and the remembered output folder.
+- Insertion arrows use a clear gutter beside printed digits when the vertical gap is tight. The generic warning about a bill dated after the amendments has been removed.
+- Duplicate uploads skip repeated PDF/OCR processing. Unused modules, guide data and vendored diff files were removed, while required PDF/OCR resources were retained.
+- Deterministic streamed compression reduces the download by 58.38% compared with 1.0.4. Installed runtime requirements remain unchanged.
+
+All 181 source tests passed locally and on GitHub. The actual packaged Windows app passed batch upload, remembered-folder and retry recovery, duplicate/no-overwrite, cancellation, partial results, source-instruction popups, compact UI, boxed indicators, tight-gap arrows, first/last-line insertion, author strikes and original AB 1967/2266 checks. Original inputs and all 351 packaged files remained unchanged. Six ordinary output PDFs matched independently reconstructed approved references byte for byte; only the requested rectangular indicators and uppercase filename metadata differed from 1.0.4. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised.
+
+Published from main by [the verified workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41144468810). Tag `v1.0.5` targets tested source `bd036bd1aeb5d0f9174a0394def39528533e0525`. The exact tested ZIP was independently reconstructed and both published asset sizes and SHA-256 digests were verified. These checks are not a measured human precision/recall benchmark.
+
+ZIP: `Amends-In-Maker-Windows-1.0.5.zip` (170,824,848 bytes).
+
+SHA-256: `794499f6cd529821c747401e6a639ba3177b5a42c3f259a7961a2279f8cc2ab4`.
+
 ## 1.0.4 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.4).
