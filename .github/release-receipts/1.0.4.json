@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.4",
+  "sourceCommit": "c6d33f7e38e3b561bf3c42368862268fa8fc37cb",
+  "tag": "v1.0.4",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.4.package-manifest.json",
+  "manifestSHA256": "d0cb1e74461a0cee3ba52588ea00c13696531dc72c948f4be8fec3d35f8ae0a4",
+  "archiveName": "Amends-In-Maker-Windows-1.0.4.zip",
+  "archiveBytes": 410485546,
+  "archiveSHA256": "66c4c7e15d250a5d55d8c50d7f8f305f6dd6f51d6f4c44e9d5be7a9b01102b82",
+  "startHere": "Amends In Maker 1.0.4\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] Amends In.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and circled numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.4",
+  "notes": "Bill-edge insertion support and updated PDF output.\n\n- On page N, below line L, insert: places a blue margin arrow below that real printed number, including the last bill line.\n- Above-line instructions place the arrow above the referenced number, including the first line. No additional printed number is invented.\n- Red and blue strikeout lines are moderately thicker while remaining readable. Strike-and-insert remains a plain blue line.\n- Exact author and wrapped coauthor removals are marked in the heading. Explicit unambiguous author-role title instructions are supported; ambiguous targets remain held for review.\n- Output names now use AB 1982 March 25 Amends In.pdf, with no year. Full dates remain internal for matching; same-name collisions are reported.\n- Short native final pages can reuse a margin column established by an earlier page of the same PDF.\n\nAll 168 source tests passed. The actual packaged Windows app passed first/last/internal insertion checks, a three-line final page, author removals, thicker strikes, updated filenames and missing-line error review. Original files, body text outside the requested strikes, and the -0- end marker remained unchanged; preview and exported PDF pixels matched. Publication requires the exact tested package and ZIP checksum.\n\nExtract the complete ZIP and open Amends In Maker/Amends In Maker.exe."
+}
