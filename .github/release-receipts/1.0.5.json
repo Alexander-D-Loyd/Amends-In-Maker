@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.5",
+  "sourceCommit": "bd036bd1aeb5d0f9174a0394def39528533e0525",
+  "tag": "v1.0.5",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.5.package-manifest.json",
+  "manifestSHA256": "b77138b2753adb14f59cf096c5bbd38de43fc7fb291ce137fe8bb50329bfc749",
+  "archiveName": "Amends-In-Maker-Windows-1.0.5.zip",
+  "archiveBytes": 170824848,
+  "archiveSHA256": "794499f6cd529821c747401e6a639ba3177b5a42c3f259a7961a2279f8cc2ab4",
+  "startHere": "Amends In Maker 1.0.5\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] AMENDS IN.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and boxed numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.5",
+  "notes": "Cleanup release and requested workflow refinements.\n\n- Download reduced from 410.5 MB to 170.8 MB (58.38% smaller) using reproducible compression; required offline runtime/OCR/PDF assets remain included.\n- Removed 75 obsolete source/vendor/bootstrap files. Duplicate uploads skip repeated PDF/OCR parsing, and the standalone planner avoids unused full-bill allocations.\n- Removed the warning that a supplied bill is dated after its amendment set.\n- Tight row spacing now tries the clear gutter beside the number column without crossing digits or bill text.\n- Amendment indicators are consistently boxed.\n- Filenames use AB 1982 March 25 AMENDS IN.pdf.\n- Amends In Files Created is a compact numbered bill/date/View PDF list; controls read Review Files and Clear Cache.\n\nAll 181 source tests passed. The actual packaged Windows app passed full batch/folder/retry/cancel/cache/error/OCR workflows, tight-margin and later-date cases, and strict six-PDF frozen-reference comparisons allowing only the requested box/title changes. Original inputs and all 351 packaged files stayed unchanged. Two time zones produced identical compressed archives, independently verified file-by-file in Python. Publication still requires the exact tested manifest and ZIP checksum.\n\nThe functional 1.0.4 release was published before this cleanup resumed. See CODE_AUDIT.md for the audit record.\n\nExtract the complete ZIP and open Amends In Maker/Amends In Maker.exe."
+}
