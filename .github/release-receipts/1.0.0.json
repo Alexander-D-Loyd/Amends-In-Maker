@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.0",
+  "sourceCommit": "fed60b0c83e3e3569020674f036d520f83dcbd15",
+  "tag": "v1.0.0",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.0.package-manifest.json",
+  "manifestSHA256": "729629e53e6366bef13b48793bc50ce711c07a70d45f77a389632f401fd89b67",
+  "archiveName": "Amends-In-Maker-Windows-1.0.0.zip",
+  "archiveBytes": 410468716,
+  "archiveSHA256": "8f431e1349757584d09f0533988b9b14f5d993f82cdbc7fe25e2fa9098e2686a",
+  "startHere": "Amends In Maker 1.0.0\r\n\r\nOpen Amends In Maker.exe and keep this whole folder together.\r\nDrop bill versions and instructional amendment PDFs in a batch.\r\nConfirm file matching, dates and uncertain readings before exporting.\r\nOutput: Amends In [Bill Number and Date of Amendments].pdf\r\nYellow margin numbers and numbered markers identify amendment locations.\r\nBlue arrows mark insertions; red lines mark strikes; blue lines with\r\nendpoint arrows mark strike-and-insert instructions. Original PDFs stay unchanged.\r\nPDF reading, OCR and markup run locally. No account or installation is needed.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "Amends In Maker 1.0.0",
+  "notes": "First standalone Windows release of Amends In Maker.\n\nDrop multiple bill versions and amendment PDFs together, review the matched bills and dates, and export the previous-version PDFs with yellow margin-number highlights, numbered amendment marks, blue insertion arrows, red strikeouts, and blue strike-and-insert marks. Processing stays offline and original PDFs remain unchanged. Existing outputs are skipped.\n\nExtract the complete Windows ZIP and open Amends In Maker/Amends In Maker.exe.\n\nValidation: 107 source tests passed; the actual packaged Windows app passed batch, preview/export, OCR-review and no-overwrite checks. Original AB 1967 and AB 2266 checks located all 18 instructional amendments across 14 output pages, preserving pixels outside the annotation bounds. Ambiguous readings and locations remain held for human review. The published ZIP must match the exact tested package manifest and SHA-256."
+}
