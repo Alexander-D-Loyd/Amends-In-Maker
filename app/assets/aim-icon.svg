@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="title desc">
+  <title id="title">AiM</title>
+  <desc id="desc">Ivory sans serif AiM lettering with a plum i dot on warm graphite.</desc>
+  <rect width="512" height="512" rx="104" fill="#262129"/>
+  <rect x="22" y="22" width="468" height="468" rx="86" fill="none" stroke="#665269" stroke-width="2"/>
+  <path d="M77 320L125 184H147L197 320H174L161 281H110L97 320ZM116 262H155L135 203Z" fill="#f1e9e5" fill-rule="evenodd"/>
+  <path d="M220 239H242V320H220Z" fill="#f1e9e5"/>
+  <circle cx="231" cy="211" r="12" fill="#d0b4ce"/>
+  <path d="M276 320V184H307L350 286L393 184H424V320H402V214L360 317H340L298 214V320Z" fill="#f1e9e5"/>
+  <path d="M90 366H422" stroke="#d0b4ce" stroke-width="7"/>
+</svg>

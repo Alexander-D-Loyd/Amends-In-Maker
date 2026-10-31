@@ -4,33 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Amends In Maker</title><link rel="stylesheet" href="styles.css">
+  <title>AiM</title><link rel="icon" href="assets/aim-icon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="app-header"><span class="brand">Amends In Maker</span><span class="local-note">Your PDFs stay on this computer</span></header>
+  <header class="app-header"><div class="brand-lockup"><img class="brand-icon" src="assets/aim-icon.svg" alt=""><div><span class="brand">AiM</span><span class="brand-subtitle">Amends In Maker</span></div></div><span class="local-note">Your PDFs stay on this computer</span></header>
+  <div class="workspace-bar"><ol class="workflow-steps" aria-label="Automatic workflow"><li><b>01</b>Add PDFs</li><li><b>02</b>Match files</li><li><b>03</b>Save marked bills</li></ol><button id="review-files" class="secondary" type="button" disabled>Review Files</button></div>
   <main>
-    <section id="home" class="home">
-      <p class="eyebrow">AMENDMENT MARKUP</p><h1>Drop your files. Get your Amends In PDFs.</h1>
-      <p class="intro">Add the bill PDFs to mark and their amendment instructions. We’ll match the bill numbers in the filenames and save a marked copy for each amendment date.</p>
-      <section id="drop-zone" class="drop-zone" aria-label="Drop bill and amendment PDFs">
-        <span class="drop-icon" aria-hidden="true">↓</span><h2>Drop bill and amendment PDFs here</h2>
-        <p>Several bills at once. Only the bill version to mark and its amendments are needed.</p>
-        <button id="choose-files" type="button" disabled>Choose PDFs</button><input id="file-input" type="file" accept=".pdf,application/pdf" multiple hidden>
-        <p class="filename-example">For example: AB 1982 v99.pdf + AB 1982 March 25, 2026 AMENDS.pdf</p>
-      </section>
-      <section class="folder-bar" aria-label="Output folder"><div><h2>Save marked PDFs to</h2><p id="output-folder-name">Choose a folder when you add your first batch.</p><p class="small-note">This folder is remembered. You can change it at any time.</p></div><button id="output-folder" type="button" class="secondary" disabled>Choose folder</button></section>
-    </section>
     <section id="import-progress" class="progress-panel" hidden><p id="import-status" role="status"></p><progress id="read-progress" max="1" value="0"></progress><button id="cancel-import" type="button" class="secondary">Cancel remaining files</button></section>
-    <p id="app-status" class="app-status" role="status" aria-live="polite"></p>
-    <section id="batch-results" hidden aria-labelledby="results-title">
-      <div class="section-heading"><div><h2 id="results-title">Amends In Files Created</h2><p id="batch-summary"></p></div><div class="actions"><button id="review-files" class="secondary" type="button">Review Files</button><button id="retry-output" class="secondary" type="button">Retry pending PDFs</button><button id="clear-batch" class="secondary" type="button" title="Clear loaded files and previews">Clear Cache</button></div></div>
-      <div id="attention-notice" class="notice warning" hidden><div><h3 id="attention-title"></h3><p>Open an issue to see its amendment in the original PDF. PDFs with unresolved marks are identified below.</p></div><button id="review-issues" class="secondary" type="button">Review issues</button></div>
+    <div class="workspace-grid">
+    <section id="home" class="home">
+      <section id="drop-zone" class="drop-zone" aria-label="Drop bill and amendment PDFs">
+        <span class="drop-icon" aria-hidden="true">+</span><h1>Drop PDFs here</h1>
+        <p>Bill versions + corresponding amendments. Several bills at once.</p>
+        <button id="choose-files" type="button" disabled>Choose PDFs</button><input id="file-input" type="file" accept=".pdf,application/pdf" multiple hidden>
+        <p class="filename-example">AB 1982 v99.pdf + AB 1982 March 25 AMENDS.pdf</p>
+      </section>
+      <section class="folder-bar" aria-label="Output folder"><h2>Save marked PDFs to</h2><div class="folder-destination"><p id="output-folder-name">Choose a folder when you add your first batch.</p><button id="output-folder" type="button" class="secondary" disabled>Choose folder</button></div><p class="small-note">Remembered for next time. Change it at any time.</p></section>
+    </section>
+    <section id="empty-results" class="results" aria-label="Created PDFs"><div class="section-heading"><h2>Amends In Files Created</h2></div><p class="empty-results">Marked PDFs will appear here after you add your files.</p></section>
+    <section id="batch-results" class="results" hidden aria-labelledby="results-title">
+      <div class="section-heading"><h2 id="results-title">Amends In Files Created</h2><p id="batch-summary"></p></div>
       <ol id="group-list" class="group-list"></ol>
+      <div id="attention-notice" class="notice warning" hidden><div class="attention-heading"><h3 id="attention-title"></h3><button id="review-issues" class="secondary" type="button">Review issues</button></div><p>Review unresolved files or amendments in their original PDFs.</p></div>
       <section id="import-errors" class="notice error" hidden><h3>Files that could not be read</h3><ul id="import-error-list"></ul></section>
     </section>
+    </div>
     <section id="file-labels" class="file-labels" hidden aria-labelledby="file-labels-title"><div class="section-heading"><div><h2 id="file-labels-title">Uploaded files</h2><p>Use these controls if a filename is incomplete or a file needs to be replaced.</p></div><button id="close-file-labels" type="button" class="secondary">Close</button></div><div id="file-label-list"></div></section>
+    <p id="app-status" class="app-status" role="status" aria-live="polite"></p>
   </main>
-  <footer>Original PDFs stay unchanged. Existing output files are skipped.</footer>
+  <footer class="app-footer"><span>Original PDFs stay unchanged. Existing output files are skipped.</span><div class="actions"><button id="retry-output" class="secondary" type="button">Retry pending PDFs</button><button id="clear-batch" class="secondary" type="button" title="Clear loaded files and previews">Clear Cache</button></div></footer>
   <dialog id="issue-dialog" aria-labelledby="issue-title">
     <div class="dialog-heading"><div><p id="issue-bill" class="eyebrow"></p><h2 id="issue-title">Amendment needs attention</h2></div><button id="close-issue" class="secondary" type="button" aria-label="Close issue">Close</button></div>
     <p id="issue-reason" class="notice warning"></p><p id="issue-source" class="small-note"></p><div id="issue-reading"></div>

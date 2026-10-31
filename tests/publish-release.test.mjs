@@ -18,6 +18,15 @@ test('release receipts reject wrong identities unsafe paths duplicate rows and i
 test('only exact text newline alternatives may match a verified file hash',()=>{
  const expected=Buffer.from('first\r\nsecond\r\n'),row={bytes:expected.length,sha256:digest(expected)};assert.deepEqual(normalizeExpected(Buffer.from('first\nsecond\n'),row),expected);assert.equal(normalizeExpected(Buffer.from('first\nCHANGED\n'),row),null);assert.equal(normalizeExpected(Buffer.from([0,10,13]),row),null);
 });
+
+test('AiM releases require the new identity while original receipts retain their old identity',t=>{
+ const f=fixture(t),manifest=structuredClone(f.data.manifest);manifest.applicationVersion='1.0.6';manifest.files.find(r=>r.path==='Amends In Maker.exe').path='AiM.exe';
+ const bytes=Buffer.from(JSON.stringify(manifest)),receipt={...f.data.receipt,version:'1.0.6',tag:'v1.0.6',manifestPath:'.github/release-receipts/1.0.6.package-manifest.json',manifestSHA256:digest(bytes),archiveName:'Amends-In-Maker-Windows-1.0.6.zip',title:'AiM 1.0.6'};
+ assert.equal(validateReceipt(receipt,bytes).applicationVersion,'1.0.6');assert.equal(path.basename(publisher.artifactPaths(receipt,f.root).folder),'AiM');
+ assert.throws(()=>validateReceipt({...receipt,title:'Amends In Maker 1.0.6'},bytes));
+ const oldExecutable=structuredClone(manifest);oldExecutable.files.find(r=>r.path==='AiM.exe').path='Amends In Maker.exe';const bad=Buffer.from(JSON.stringify(oldExecutable));assert.throws(()=>validateReceipt({...receipt,manifestSHA256:digest(bad)},bad));
+ assert.equal(validateReceipt(f.data.receipt,f.data.manifestBytes).applicationVersion,'1.0.0');assert.equal(path.basename(publisher.artifactPaths(f.data.receipt,f.root).folder),'Amends In Maker');
+});
 test('reconstruction binds every input and rejects extra input or changed source bytes',t=>{
  const f=fixture(t),dest=path.join(f.root,'again');fs.writeFileSync(f.plan.files[0].source,'changed');assert.throws(()=>reconstruct(f.data,f.plan,dest),/Cannot reconstruct/);assert.throws(()=>reconstruct(f.data,{files:f.plan.files.slice(1)},path.join(f.root,'missing')),/omits or adds/);
 });

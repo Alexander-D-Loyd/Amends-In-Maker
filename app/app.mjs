@@ -19,6 +19,7 @@ function updateFolder(){ $('output-folder-name').textContent=state.folder||'Choo
 function queue(){const items=[];for(const g of state.groups){const seen=new Set();for(const i of [...g.output.issues,...(state.runtimeIssues.get(g.id)||[])]){const issue=typeof i==='string'?{message:i}:i,signature=JSON.stringify([issue.code,issue.number,issue.entryId,issueText(issue)]);if(seen.has(signature))continue;seen.add(signature);items.push({group:g,issue});}}for(const failure of state.failures)items.push({group:null,issue:{code:'PDF_LOAD_FAILED',message:failure.name+': '+failure.error},failure});return items;}
 function render(){
   $('batch-results').hidden=!state.entries.length&&!state.failures.length;
+  $('empty-results').hidden=!$('batch-results').hidden;
   const results=new Map(state.groups.map(g=>[g.id,resultFor(g)])),created=[...results.values()].filter(r=>r?.kind==='saved').length,skipped=[...results.values()].filter(r=>r?.kind==='skipped').length;
   $('batch-summary').textContent=created+' PDF'+(created===1?'':'s')+' created'+(skipped?' · '+skipped+' existing file'+(skipped===1?'':'s')+' skipped':'');
   const items=queue();

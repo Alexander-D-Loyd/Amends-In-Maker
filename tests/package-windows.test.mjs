@@ -23,7 +23,7 @@ test('jsdiff packaging includes only the proven array-diff runtime closure and i
 });
 
 test('safe output paths preserve all existing archives and staged folders',t=>{
- const root=temporary(t);for(const v of ['../1.0.0','v1.0.0','1.0.0/other','1.0.0:stream','1.0.0-beta',''])assert.throws(()=>outputPaths(root,v));const p=outputPaths(root,'1.0.0');assert.equal(p.folder,path.join(root,'dist','Amends-In-Maker-Windows-1.0.0','Amends In Maker'));fs.mkdirSync(p.dist);fs.writeFileSync(p.zip,'keep');assert.throws(()=>outputPaths(root,'1.0.0'),/already exists/);assert.equal(fs.readFileSync(p.zip,'utf8'),'keep');
+ const root=temporary(t);for(const v of ['../1.0.0','v1.0.0','1.0.0/other','1.0.0:stream','1.0.0-beta',''])assert.throws(()=>outputPaths(root,v));const p=outputPaths(root,'1.0.0');assert.equal(p.folder,path.join(root,'dist','Amends-In-Maker-Windows-1.0.0','AiM'));fs.mkdirSync(p.dist);fs.writeFileSync(p.zip,'keep');assert.throws(()=>outputPaths(root,'1.0.0'),/already exists/);assert.equal(fs.readFileSync(p.zip,'utf8'),'keep');
 });
 test('build options reject ambiguous modes and missing values',()=>{
  assert.deepEqual(readOptions(['--stage-only','--python','python']),{stageOnly:true,python:'python'});for(const a of [['--stage-only','--archive-existing'],['--refresh-docs'],['--python'],['--electron-base','--check'],['--unknown']])assert.throws(()=>readOptions(a));
