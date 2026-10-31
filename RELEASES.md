@@ -1,5 +1,21 @@
 # Published releases
 
+## 1.0.7 — October 30, 2026
+
+[Download the cleaner AiM Windows package](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.7).
+
+The extracted AiM folder now contains only `AiM.exe`, `Application Files` and `Documents`. The top-level launcher embeds the approved AiM icon for File Explorer. Electron and its required files remain together in Application Files. Instructions, README, license notices and the package manifest are in Documents.
+
+The launcher forwards arguments without a shell, starts the runtime from its own directory, and closes its child processes when it exits. Its committed binary is bound to the source and approved icon by hashes. Windows' existing .NET Framework runs the launcher; no developer SDK is needed. Package manifest format 2 records the separate launcher and original Electron executable. Original flat-release receipts remain supported.
+
+All 185 source tests passed locally and on GitHub. The actual Windows package passed the complete batch/folder/cancel/retry/cache/error/preview/OCR regression through the top-level launcher. All six output PDFs matched the previous approved bytes exactly; original inputs and all 355 packaged files stayed unchanged. All seven embedded 16–256 pixel icon images matched the approved ICO bytes exactly. Argument forwarding was exercised with spaces and Unicode in the profile path. The reorganized downloaded copy also passed a two-PDF export at its original launch location, and its original 354 files were preserved in a local backup with no deletion.
+
+Published from main by [the successful workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41156297810). Tag `v1.0.7` targets tested source `78a1682232c703a28f8f6c64bc4a72dcf244fe3d`. The tested ZIP was reconstructed with zero normalized files; both published assets and the tag target were verified. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised. These checks are not a measured human precision/recall benchmark.
+
+ZIP: `Amends-In-Maker-Windows-1.0.7.zip` (170,908,007 bytes). Keep the three top-level items together and open `AiM/AiM.exe`.
+
+SHA-256: `1d19693f4a1e76a2fbbde6c9a638b9fe42e1238d63dc1ed0bc53cfbcd6021cb0`.
+
 ## 1.0.6 — October 30, 2026
 
 [Download AiM for Windows](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.6).
