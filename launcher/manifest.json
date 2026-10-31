@@ -1,0 +1,8 @@
+{
+  "format": "aim.windows-launcher",
+  "version": "1.0.0",
+  "target": "Application Files/AiM.exe",
+  "binarySHA256": "f33b71f1852c7b65fea20ca5d50bbac54b87ab83b3cc32398874f121642c34c8",
+  "sourceSHA256": "57d0daf149df1b7c6db7ef08ab7ebf07effa15461e47316f5e7c3e052ef56dee",
+  "iconSHA256": "f27ee33e33cda4144454ac4e15b94da9adf06ac1c6717b324e3deda6dd9b0307"
+}

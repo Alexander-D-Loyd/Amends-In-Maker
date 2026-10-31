@@ -4,7 +4,7 @@ An offline Windows app that marks amendment locations on copies of California le
 
 ## Use the app
 
-Extract the complete Windows release ZIP and open `AiM/AiM.exe`. Keep the whole application folder together. No separate installation of Python, Java or Node is needed.
+Extract the complete Windows release ZIP and open `AiM/AiM.exe`. The top level contains only AiM.exe, Application Files and Documents. Keep these together; the executable opens the app from Application Files. Instructions, notices and the package manifest are in Documents. No separate installation of Python, Java or Node is needed.
 
 1. Open the app to its file-drop homepage.
 2. Drop bill PDFs and their amendment-instruction PDFs together. Several bills can be processed at once. Only the previous bill to mark and its amendments are needed.

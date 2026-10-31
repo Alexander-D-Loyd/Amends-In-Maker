@@ -2,6 +2,7 @@
 // Offline Windows folder/ZIP packaging. Existing outputs are never replaced.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
 const ROOT=path.resolve(__dirname,'..'),APP_NAME='AiM';
+const layout=require('./windows-layout.cjs');
 const ZIP_COMPRESSION=Object.freeze({library:'fflate',version:'0.8.2',level:6,mem:8,chunkBytes:1024*1024});
 const ELECTRON_FILES=['chrome_100_percent.pak','chrome_200_percent.pak','d3dcompiler_47.dll','dxcompiler.dll','dxil.dll','ffmpeg.dll','icudtl.dat','LICENSE','LICENSES.chromium.html','resources.pak','snapshot_blob.bin','v8_context_snapshot.bin','version','vk_swiftshader_icd.json','vk_swiftshader.dll','vulkan-1.dll'];
 const ROOT_FILES=['package.json','main.cjs','preload.cjs','save-batch.cjs','output-settings.cjs','ocr-assets.json','upstream-provenance.json'];
@@ -35,6 +36,15 @@ function outputPaths(root,version,existing=false,readOnly=false){
  return {dist,name,stage,folder,zip};
 }
 function readOptions(args){const o={};for(let n=0;n<args.length;n++){const key=args[n];if(key==='--stage-only')o.stageOnly=true;else if(key==='--archive-existing')o.archiveExisting=true;else if(key==='--refresh-docs')o.refreshDocs=true;else if(key==='--check')o.check=true;else if(key==='--electron-base'||key==='--python'){if(!args[n+1]||args[n+1].startsWith('--'))throw Error('Missing '+key+' value.');o[key==='--python'?'python':'electronBase']=args[++n];}else if(key==='--help')o.help=true;else throw Error('Unknown packaging option: '+key);}if(o.stageOnly&&o.archiveExisting)throw Error('Choose stage-only or archive-existing.');if(o.refreshDocs&&!o.archiveExisting)throw Error('refresh-docs requires archive-existing.');return o;}
+function verifiedLauncher(root){
+ const directory=path.join(root,'launcher');requireDir(directory);
+ const binary=path.join(directory,'AiM.exe'),source=path.join(directory,'AiM.cs'),record=path.join(directory,'manifest.json'),icon=path.join(root,'app/assets/aim-icon.ico');
+ for(const file of [binary,source,record,icon])requireFile(file);
+ const manifest=JSON.parse(fs.readFileSync(record,'utf8'));
+ if(manifest.format!=='aim.windows-launcher'||!/^\d+\.\d+\.\d+$/.test(manifest.version||'')||manifest.target!==layout.RUNTIME+'/'+APP_NAME+'.exe')throw Error('Unexpected launcher identity.');
+ for(const [field,file]of [['binarySHA256',binary],['sourceSHA256',source],['iconSHA256',icon]])if(!/^[a-f0-9]{64}$/.test(manifest[field]||'')||fileHash(file)!==manifest[field])throw Error('Launcher differs from its verified source or icon: '+field);
+ return {binary,manifest};
+}
 function createPlan(options={}){
  const root=path.resolve(options.root||ROOT),pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')),outputs=outputPaths(root,pkg.version,!!options.archiveExisting,!!options.readOnly),base=path.resolve(root,options.electronBase||'node_modules/electron/dist');
  requireDir(base);if(pkg.productName!==APP_NAME||pkg.name!=='amends-in-maker'||!/^\d+\.\d+\.\d+$/.test(pkg.devDependencies?.electron||''))throw Error('Unexpected application identity or unpinned Electron.');
@@ -45,29 +55,31 @@ function createPlan(options={}){
  const ocr=JSON.parse(fs.readFileSync(path.join(root,'ocr-assets.json'),'utf8')),copied=fs.readFileSync(path.join(root,'app/vendor/ocr/MANIFEST.json'));
  if(!copied.equals(fs.readFileSync(path.join(root,'ocr-assets.json'))))throw Error('OCR manifest differs from its pinned source.');
  for(const [name,row]of Object.entries(ocr.files)){if(!/^[A-Za-z0-9_.-]+$/.test(name))throw Error('Unsafe OCR asset path.');const p=path.join(root,'app/vendor/ocr',name);requireFile(p);if(fs.statSync(p).size!==row.bytes||fileHash(p)!==row.sha256)throw Error('Pinned OCR asset mismatch: '+name);}
- const files=[],add=(source,relative)=>{requireFile(source);files.push({source,relative});};
- for(const file of ELECTRON_FILES)add(path.join(base,file),file);add(path.join(base,'electron.exe'),APP_NAME+'.exe');for(const file of walk(path.join(base,'locales')))add(file,slashes(path.relative(base,file)));
- for(const file of [...ROOT_FILES,...DOCUMENTS])add(path.join(root,file),'resources/app/'+file);
- for(const file of walk(path.join(root,'app'))){const rel=slashes(path.relative(path.join(root,'app'),file));if(isAppFileAllowed(rel))add(file,'resources/app/app/'+rel);}
+ const launcher=verifiedLauncher(root),files=[],add=(source,relative)=>{requireFile(source);files.push({source,relative});};
+ add(launcher.binary,APP_NAME+'.exe');
+ for(const file of ELECTRON_FILES)add(path.join(base,file),layout.RUNTIME+'/'+file);add(path.join(base,'electron.exe'),layout.RUNTIME+'/'+APP_NAME+'.exe');for(const file of walk(path.join(base,'locales')))add(file,layout.RUNTIME+'/'+slashes(path.relative(base,file)));
+ for(const file of ROOT_FILES)add(path.join(root,file),layout.RUNTIME+'/resources/app/'+file);
+ for(const file of DOCUMENTS)add(path.join(root,file),layout.DOCUMENTATION+'/'+file);
+ for(const file of walk(path.join(root,'app'))){const rel=slashes(path.relative(path.join(root,'app'),file));if(isAppFileAllowed(rel))add(file,layout.RUNTIME+'/resources/app/app/'+rel);}
  const seen=new Set();for(const f of files){const key=f.relative.toLowerCase();if(seen.has(key)||f.relative.startsWith('/')||f.relative.includes('\\')||f.relative.split('/').includes('..'))throw Error('Unsafe or duplicate package path.');seen.add(key);}files.sort((a,b)=>a.relative<b.relative?-1:a.relative>b.relative?1:0);
- return {root,pkg,outputs,base,files};
+ return {root,pkg,outputs,base,files,launcher:launcher.manifest,manifestVersion:2};
 }
-function manifestForPlan(plan,rows){return {format:'amends-in-maker.windows-package',manifestVersion:1,applicationVersion:plan.pkg.version,electronVersion:plan.pkg.devDependencies.electron,electronExecutableSHA256:fileHash(path.join(plan.base,'electron.exe')),scope:'Complete standalone Windows application. No uploaded bills, user profiles, QA artifacts, development dependencies, Python/Java engines or style manuals are included. Manifest excludes itself.',files:rows};}
-function startHere(version){return APP_NAME+' '+version+"\r\n\r\nOpen AiM.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] AMENDS IN.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and boxed numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n";}
+function manifestForPlan(plan,rows){return {format:'amends-in-maker.windows-package',manifestVersion:2,launcher:plan.launcher,applicationVersion:plan.pkg.version,electronVersion:plan.pkg.devDependencies.electron,electronExecutableSHA256:fileHash(path.join(plan.base,'electron.exe')),scope:'Complete standalone Windows application. No uploaded bills, user profiles, QA artifacts, development dependencies, Python/Java engines or style manuals are included. Manifest excludes itself.',files:rows};}
+function startHere(version){return APP_NAME+' '+version+"\r\n\r\nOpen the AiM.exe beside the Application Files and Documents folders. Keep all three together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] AMENDS IN.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and boxed numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nDocuments/PACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee Documents/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n";}
 function summary(plan){return {version:plan.pkg.version,electronVersion:plan.pkg.devDependencies.electron,inputFiles:plan.files.length,folder:slashes(path.relative(plan.root,plan.outputs.folder)),archive:slashes(path.relative(plan.root,plan.outputs.zip))};}
 function pythonFor(options){const p=options.python||process.env.AMENDS_IN_PYTHON||'python',r=spawnSync(p,['-B','-c','import zipfile,hashlib;print("ready")'],{encoding:'utf8',windowsHide:true});if(r.error||r.status!==0||r.stdout.trim()!=='ready')throw Error('Python with zipfile is required for the build only; pass --python EXECUTABLE.');return p;}
 function copyVerified(from,to,replace=false){const before=fileHash(from);fs.mkdirSync(path.dirname(to),{recursive:true});fs.copyFileSync(from,to,replace?0:fs.constants.COPYFILE_EXCL);if(fileHash(from)!==before||fileHash(to)!==before)throw Error('Input changed during packaging.');return before;}
 function stagePackage(options={}){
  const plan=createPlan(options),s=summary(plan);if(options.check)return {...s,checkedOnly:true};pythonFor(options);fs.mkdirSync(plan.outputs.dist,{recursive:true});fs.mkdirSync(plan.outputs.stage);fs.mkdirSync(plan.outputs.folder);
  const rows=plan.files.map(f=>({path:f.relative,bytes:fs.statSync(f.source).size,sha256:copyVerified(f.source,path.join(plan.outputs.folder,...f.relative.split('/')))}));
- const text=startHere(plan.pkg.version);fs.writeFileSync(path.join(plan.outputs.folder,'START HERE.txt'),text,{flag:'wx'});rows.push({path:'START HERE.txt',bytes:Buffer.byteLength(text),sha256:digest(text)});rows.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
- fs.writeFileSync(path.join(plan.outputs.folder,'PACKAGE-MANIFEST.json'),JSON.stringify(manifestForPlan(plan,rows),null,2)+'\n',{flag:'wx'});return {...s,stagedOnly:true,packagedFiles:rows.length+1};
+ const text=startHere(plan.pkg.version);fs.writeFileSync(path.join(plan.outputs.folder,layout.START_HERE),text,{flag:'wx'});rows.push({path:layout.START_HERE,bytes:Buffer.byteLength(text),sha256:digest(text)});rows.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
+ fs.writeFileSync(path.join(plan.outputs.folder,layout.MANIFEST),JSON.stringify(manifestForPlan(plan,rows),null,2)+'\n',{flag:'wx'});return {...s,stagedOnly:true,packagedFiles:rows.length+1};
 }
-function documentationPath(relative){return DOCUMENTS.some(p=>relative==='resources/app/'+p);}
+function documentationPath(relative){return DOCUMENTS.some(p=>relative==='resources/app/'+p||relative===layout.DOCUMENTATION+'/'+p);}
 function verifyStagedPackage(plan,manifest,{refreshDocs=false}={}){
- if(manifest.format!=='amends-in-maker.windows-package'||manifest.manifestVersion!==1||manifest.applicationVersion!==plan.pkg.version||manifest.electronVersion!==plan.pkg.devDependencies.electron||!Array.isArray(manifest.files))throw Error('Staged manifest identity differs.');
- const wanted=new Set([...plan.files.map(f=>f.relative),'START HERE.txt']),rows=new Map();for(const r of manifest.files){if(!wanted.has(r.path)||rows.has(r.path)||!Number.isSafeInteger(r.bytes)||r.bytes<0||!/^[a-f0-9]{64}$/.test(r.sha256||''))throw Error('Unexpected staged manifest entry.');rows.set(r.path,r);}if(rows.size!==wanted.size)throw Error('Source file set changed after staging; restage and repeat native verification.');
- const actual=walk(plan.outputs.folder).map(f=>slashes(path.relative(plan.outputs.folder,f)));if(actual.length!==rows.size+1||actual.some(p=>p!=='PACKAGE-MANIFEST.json'&&!rows.has(p)))throw Error('Staged folder has unexpected files.');
+ if(manifest.format!=='amends-in-maker.windows-package'||manifest.manifestVersion!==(plan.manifestVersion||1)||manifest.applicationVersion!==plan.pkg.version||manifest.electronVersion!==plan.pkg.devDependencies.electron||!Array.isArray(manifest.files))throw Error('Staged manifest identity differs.');
+ const wanted=new Set([...plan.files.map(f=>f.relative),layout.startHerePath(manifest)]),rows=new Map();for(const r of manifest.files){if(!wanted.has(r.path)||rows.has(r.path)||!Number.isSafeInteger(r.bytes)||r.bytes<0||!/^[a-f0-9]{64}$/.test(r.sha256||''))throw Error('Unexpected staged manifest entry.');rows.set(r.path,r);}if(rows.size!==wanted.size)throw Error('Source file set changed after staging; restage and repeat native verification.');
+ const actual=walk(plan.outputs.folder).map(f=>slashes(path.relative(plan.outputs.folder,f)));if(actual.length!==rows.size+1||actual.some(p=>p!==layout.manifestPath(manifest)&&!rows.has(p)))throw Error('Staged folder has unexpected files.');
  for(const r of rows.values()){const f=path.join(plan.outputs.folder,...r.path.split('/'));if(fs.statSync(f).size!==r.bytes||fileHash(f)!==r.sha256)throw Error('Staged file changed after native verification: '+r.path);}
  for(const f of plan.files){const row=rows.get(f.relative);if(!(refreshDocs&&documentationPath(f.relative))&&(fs.statSync(f.source).size!==row.bytes||fileHash(f.source)!==row.sha256))throw Error('Source changed after staging: '+f.relative);}
  return rows;
@@ -106,8 +118,35 @@ with zipfile.ZipFile(archive) as z:
 print(json.dumps({'archiveEntriesVerified':len(files),'manifestFilesVerified':len(expected)}))
 `;
 // Python verifies independently; it does not generate compressed bytes.
-const VERIFY_ZIP_SCRIPT=ZIP_SCRIPT.slice(0,ZIP_SCRIPT.indexOf("with zipfile.ZipFile(archive,'x'"))+ZIP_SCRIPT.slice(ZIP_SCRIPT.indexOf('with zipfile.ZipFile(archive) as z:')).replace('names=z.namelist()',String.raw`names=z.namelist()
- if any(e.compress_type!=zipfile.ZIP_DEFLATED or e.date_time!=(1980,1,1,0,0,0) or e.create_system!=3 or e.external_attr!=0o100644<<16 for e in z.infolist()):raise ValueError('Unexpected archive compression or metadata')`).replaceAll("'Amends In Maker/'","'"+APP_NAME+"/'");
+const VERIFY_ZIP_SCRIPT=String.raw`
+import sys,json,hashlib,zipfile
+from pathlib import Path
+folder=Path(sys.argv[1]).resolve();archive=Path(sys.argv[2]).resolve()
+manifest_path='Documents/PACKAGE-MANIFEST.json' if (folder/'Documents/PACKAGE-MANIFEST.json').is_file() else 'PACKAGE-MANIFEST.json'
+manifest=json.loads((folder/manifest_path).read_text(encoding='utf-8'))
+expected={r['path']:r for r in manifest['files']}
+files=sorted(p.relative_to(folder).as_posix() for p in folder.rglob('*') if p.is_file())
+if set(files)!=set(expected)|{manifest_path}:raise ValueError('Staged file set changed')
+with zipfile.ZipFile(archive) as z:
+ names=z.namelist()
+ if len(names)!=len(files) or len(set(n.lower() for n in names))!=len(names):raise ValueError('Unexpected duplicate archive entries')
+ for entry in z.infolist():
+  if entry.compress_type!=zipfile.ZIP_DEFLATED or entry.date_time!=(1980,1,1,0,0,0) or entry.create_system!=3 or entry.external_attr!=0o100644<<16:raise ValueError('Unexpected archive compression or metadata')
+  prefix='AiM/'
+  if not entry.filename.startswith(prefix):raise ValueError('Unsafe archive root')
+  relative=entry.filename[len(prefix):]
+  if relative.startswith('/') or '..' in relative.split('/'):raise ValueError('Unsafe archive entry')
+  h=hashlib.sha256()
+  with z.open(entry) as f:
+   while True:
+    chunk=f.read(1024*1024)
+    if not chunk:break
+    h.update(chunk)
+  if relative==manifest_path:
+   if h.hexdigest()!=hashlib.sha256((folder/relative).read_bytes()).hexdigest():raise ValueError('Archive manifest differs')
+  elif relative not in expected or entry.file_size!=expected[relative]['bytes'] or h.hexdigest()!=expected[relative]['sha256']:raise ValueError('Archive file integrity mismatch: '+relative)
+print(json.dumps({'archiveEntriesVerified':len(files),'manifestFilesVerified':len(expected)}))
+`;
 function writeCompressedZip(folder,archive){
  folder=path.resolve(folder);archive=path.resolve(archive);requireDir(folder);
  const relativeOutput=path.relative(folder,archive);if(!relativeOutput||!path.isAbsolute(relativeOutput)&&relativeOutput!=='..'&&!relativeOutput.startsWith('..'+path.sep))throw Error('Archive output cannot be inside its input folder.');
@@ -136,7 +175,7 @@ function archiveVerifiedFolder(folder,archive,{python}={}){
  return JSON.parse(checked.stdout.trim());
 }
 function archivePackage(options={}){
- const plan=createPlan({...options,archiveExisting:true});requireDir(plan.outputs.folder);const mf=path.join(plan.outputs.folder,'PACKAGE-MANIFEST.json');requireFile(mf);let manifest=JSON.parse(fs.readFileSync(mf,'utf8'));const rows=verifyStagedPackage(plan,manifest,options);if(options.check)return {...summary(plan),checkedOnly:true,stagedFilesVerified:rows.size};
+ const plan=createPlan({...options,archiveExisting:true});requireDir(plan.outputs.folder);const mf=path.join(plan.outputs.folder,layout.MANIFEST);requireFile(mf);let manifest=JSON.parse(fs.readFileSync(mf,'utf8'));const rows=verifyStagedPackage(plan,manifest,options);if(options.check)return {...summary(plan),checkedOnly:true,stagedFilesVerified:rows.size};
  if(options.refreshDocs){for(const f of plan.files.filter(f=>documentationPath(f.relative))){const sha256=copyVerified(f.source,path.join(plan.outputs.folder,...f.relative.split('/')),true);rows.set(f.relative,{path:f.relative,bytes:fs.statSync(f.source).size,sha256});}manifest=manifestForPlan(plan,[...rows.values()].sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0));fs.writeFileSync(mf,JSON.stringify(manifest,null,2)+'\n');verifyStagedPackage(plan,manifest);}
  const verified=archiveVerifiedFolder(plan.outputs.folder,plan.outputs.zip,options),archiveSHA256=fileHash(plan.outputs.zip);fs.writeFileSync(plan.outputs.zip+'.sha256',archiveSHA256+'  '+path.basename(plan.outputs.zip)+'\n',{flag:'wx'});
  return {...summary(plan),packagedFiles:rows.size+1,archiveBytes:fs.statSync(plan.outputs.zip).size,archiveSHA256,...verified};
