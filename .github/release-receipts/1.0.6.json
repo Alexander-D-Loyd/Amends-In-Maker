@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.6",
+  "sourceCommit": "3684efc28572a77ce0262f0dc0c7f233f3a7bfc9",
+  "tag": "v1.0.6",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.6.package-manifest.json",
+  "manifestSHA256": "550b948d83295fb25f9eb5f0bb2c4921659da38848a31c266f95986fc53d912f",
+  "archiveName": "Amends-In-Maker-Windows-1.0.6.zip",
+  "archiveBytes": 170861182,
+  "archiveSHA256": "6b7cef8c310bfdee3eb8f8265fe325b8f38681248f1e80eb26a8e2789f3662e8",
+  "startHere": "AiM 1.0.6\r\n\r\nOpen AiM.exe and keep this whole folder together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] AMENDS IN.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and boxed numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nPACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee resources/app/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "AiM 1.0.6",
+  "notes": "AiM: the selected Folio design with Workbench typography.\n\n- Warm graphite and plum dark mode, with the upload area and remembered output folder on the left and a compact numbered created-files list on the right.\n- Segoe UI throughout the interface, matching the second design.\n- App title, menu, executable, header and lettermark now use AiM without punctuation. Includes SVG, PNG and multi-size Windows icon assets.\n- Existing remembered output-folder settings are preserved across the name change.\n- Batch uploads, filename matching, automatic saving, partial successful marks, error/source review, retries, Clear Cache and PDF markings keep their existing behavior.\n\nAll 182 source tests passed. The actual packaged Windows app passed full upload/folder/cancel/retry/cache/preview/error/OCR checks, first/last-line and author instructions, tight-gap insertion and later-date cases. Six output PDFs exactly match the previous approved output bytes. The UI and file-review controls fit at 1280, 1024, 760 and 320 pixels with no horizontal overflow. Original PDFs and all 354 packaged files remained unchanged. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised.\n\nExtract the complete ZIP and open AiM/AiM.exe. Keep the application folder together. Original bill PDFs stay unchanged and existing outputs are skipped. The repository and archive prefix remain Amends-In-Maker for continuity."
+}
