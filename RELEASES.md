@@ -1,5 +1,21 @@
 # Published releases
 
+## 1.0.6 — October 30, 2026
+
+[Download AiM for Windows](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.6).
+
+The selected Folio layout now uses Workbench's Segoe UI typography. Warm graphite and plum surfaces place file intake and the remembered output folder on the left, with a compact numbered created-files list on the right. The app title, header, menu and executable use `AiM`, without punctuation, with matching SVG, PNG and multi-size Windows icon assets.
+
+Batch matching, automatic saving, independent successful marks, original-instruction error review, retry, Clear Cache and PDF markings retain their existing behavior. The prior settings location and saved-folder format remain compatible across the name change.
+
+All 182 source tests passed locally and on GitHub. The actual packaged Windows app passed the complete batch/folder/cancel/retry/cache/error/preview/OCR regression. Six output PDFs matched the previous approved bytes exactly. Original inputs and all 354 packaged files stayed unchanged. The selected layout, loaded icon and file-review controls were verified at 1280, 1024, 760 and 320 pixels with no horizontal overflow or renderer exceptions. Startup path checks and a packaged-app upgrade fixture verified the previous settings location, explicit profile overrides and remembered-folder format. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised.
+
+Published from main by [the successful workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41151524642). Tag `v1.0.6` targets tested source `3684efc28572a77ce0262f0dc0c7f233f3a7bfc9`. The exact tested ZIP was reconstructed with zero normalized files; both remote assets and the tag target were verified. These checks are not a measured human precision/recall benchmark.
+
+ZIP: `Amends-In-Maker-Windows-1.0.6.zip` (170,861,182 bytes). Extract the complete ZIP and open `AiM/AiM.exe`.
+
+SHA-256: `6b7cef8c310bfdee3eb8f8265fe325b8f38681248f1e80eb26a8e2789f3662e8`.
+
 ## 1.0.5 — October 30, 2026
 
 [Download the Windows release](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.5).
