@@ -49,6 +49,8 @@ Missing bills, missing amendments, uncertain file labels, unresolved dates, unre
 
 When individual amendments fail, independently located marks can be saved and the PDF is clearly labeled in the app as having unmarked amendments. The result lists every omitted amendment and opens its original instruction for review. Whole-file identity/date/reading-integrity problems and duplicate numbering hold that bill's output. Both sides of overlapping targets remain unmarked. If a partly marked output already exists after a correction, it is still skipped: choose another output folder or remove the old output before retrying.
 
+Both **View PDF** (the marked bill) and **Review issues** (the original amendment source) open continuous, scrollable PDF viewers. Type a physical PDF page number in **Page**, then select **Go** or press **Enter**. The page counter follows scrolling; previous/next buttons are optional shortcuts.
+
 **Amends In Files Created** lists outputs in compact numbered rows: bill, date and **View PDF**. Use **Review Files** to correct file labels or bill/date pairings, or remove a file before supplying a replacement. **Clear Cache** unloads the current files and previews. Confirm an uncertain OCR reading against its original PDF when prompted. Same-character-count corrections preserve exact source coordinates; larger corrections need a readable replacement PDF.
 
 Additional limits:

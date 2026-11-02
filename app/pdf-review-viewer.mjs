@@ -1,16 +1,16 @@
-/** Continuous original-PDF review, with at most five resident page canvases. */
-export function createPdfReviewViewer({container,count,initialPage=1,pageSize,renderPage,onPageChange,onStatus,canvasId='issue-canvas'}){
+/** Continuous PDF review, with at most five resident page canvases. */
+export function createPdfReviewViewer({container,count,initialPage=1,pageSize,renderPage,onPageChange,onStatus,canvasId='issue-canvas',documentLabel='Original PDF',canvasLabel='Original amendment PDF with the issue highlighted'}){
  if(!Number.isSafeInteger(count)||count<1)throw Error('The original PDF has no available pages.');
  const rows=[],controller=new AbortController();let current=0,disposed=false,running=false,scrollFrame=0;
- const blankCanvas=()=>{const canvas=document.createElement('canvas');canvas.id=canvasId;canvas.width=0;canvas.height=0;canvas.setAttribute('aria-label','Original amendment PDF with the issue highlighted');return canvas;};
+ const blankCanvas=()=>{const canvas=document.createElement('canvas');canvas.id=canvasId;canvas.width=0;canvas.height=0;canvas.setAttribute('aria-label',canvasLabel);return canvas;};
  const fragment=document.createDocumentFragment();
  for(let n=1;n<=count;n++){
   const size=pageSize(n),width=Number.isFinite(size?.width)&&size.width>0?size.width:612,height=Number.isFinite(size?.height)&&size.height>0?size.height:792;
   const scale=Math.max(.6,Math.min(1.8,(container.clientWidth-28)/width));
-  const element=document.createElement('section');element.className='pdf-review-page';element.dataset.pdfPage=String(n);element.setAttribute('aria-label','Original PDF page '+n);
+  const element=document.createElement('section');element.className='pdf-review-page';element.dataset.pdfPage=String(n);element.setAttribute('aria-label',documentLabel+' page '+n);
   const label=document.createElement('p');label.className='pdf-review-page-label';label.textContent='Page '+n;
   const surface=document.createElement('div');surface.className='pdf-review-surface';surface.style.width=Math.ceil(width*scale)+'px';surface.style.height=Math.ceil(height*scale)+'px';
-  const canvas=document.createElement('canvas');canvas.width=0;canvas.height=0;canvas.hidden=true;canvas.dataset.page=String(n);canvas.dataset.highlightCount='0';canvas.setAttribute('aria-label','Original PDF page '+n);
+  const canvas=document.createElement('canvas');canvas.width=0;canvas.height=0;canvas.hidden=true;canvas.dataset.page=String(n);canvas.dataset.highlightCount='0';canvas.setAttribute('aria-label',documentLabel+' page '+n);
   const note=document.createElement('p');note.className='pdf-review-loading';note.textContent='Page '+n;
   surface.append(canvas,note);element.append(label,surface);fragment.append(element);rows.push({n,element,surface,canvas,note,scale,status:'idle',message:'',highlight:false,boxes:[]});
  }
@@ -42,7 +42,7 @@ export function createPdfReviewViewer({container,count,initialPage=1,pageSize,re
     if(above)container.scrollTop+=row.surface.offsetHeight-priorHeight;
     row.canvas.width=temporary.width;row.canvas.height=temporary.height;row.canvas.getContext('2d',{alpha:false}).drawImage(temporary,0,0);
     for(const [name,value]of Object.entries(temporary.dataset))row.canvas.dataset[name]=value;
-    row.canvas.dataset.page=String(row.n);row.canvas.hidden=false;row.note.hidden=true;row.status='ready';row.message=result?.message||'Showing original PDF page '+row.n+'.';row.boxes=result?.boxes||[];
+    row.canvas.dataset.page=String(row.n);row.canvas.hidden=false;row.note.hidden=true;row.status='ready';row.message=result?.message||'Showing '+documentLabel+' page '+row.n+'.';row.boxes=result?.boxes||[];
     if(result?.label)row.canvas.setAttribute('aria-label',result.label);
     if(row.n===current){revealHighlight(row);status(row);}
    }catch(error){if(!disposed){row.status='error';row.message='This PDF page could not be displayed: '+(error?.message||String(error));row.note.textContent=row.message;if(row.n===current)status(row);}}
