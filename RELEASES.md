@@ -1,5 +1,23 @@
 # Published releases
 
+## 1.0.9 — November 2, 2026
+
+[Download AiM for Windows](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.9).
+
+The separate **View PDF** popup now shows the marked bill as a continuous scrollable document, with a **Page** field and **Go** button. Enter jumps to the typed physical PDF page. **Review issues** retains these controls for the original amendment source and its instruction highlights. The current-page counter follows scrolling; previous/next buttons remain optional shortcuts. Version 1.0.8 added continuous viewing only to Review issues and omitted the separate View PDF popup.
+
+Both viewers render nearby pages on demand with at most five resident page canvases, reject invalid page numbers, and release rendering resources when closed. The controls remain visible in an 800-by-680 window.
+
+All 192 source tests passed locally and on GitHub. The actual packaged app passed the complete batch/folder/cancel/retry/cache/error/preview/OCR regression. Native View PDF tests used a ten-page original bill and exercised mouse-wheel scrolling, typed Go and Enter, invalid pages, partial-result and source-issue popups, rapid reopening, Clear Cache and small-window layout. Preview pixels matched the saved PDF exactly. All six previous output PDFs matched approved bytes; original inputs and all 356 packaged files remained unchanged. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised. These checks are not a measured human precision/recall benchmark.
+
+The existing extracted Downloads copy was also updated from 1.0.7 to 1.0.9. All 10 replaced files were backed up, 346 existing files stayed unchanged, and no files were deleted. Both popup paths passed native tests through that executable at its original location; all 356 package files matched the release afterward. Its containing folder retains the old 1.0.7 name.
+
+Published from main by [the successful workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41513938900). Tag `v1.0.9` targets tested source `039985b2c563bd786ba513e4e30e6e09378d52c4`. The tested ZIP was reconstructed with zero normalized files; the latest release, tag target and both published asset sizes and SHA-256 digests were verified.
+
+ZIP: `Amends-In-Maker-Windows-1.0.9.zip` (170,912,602 bytes). Keep `AiM.exe`, `Application Files` and `Documents` together and open `AiM/AiM.exe`.
+
+SHA-256: `3dba85de36c4a05c731f0a0f79da39f412cb49beb5db5b76dd9c54f7f5da0145`.
+
 ## 1.0.8 — November 2, 2026
 
 [Download AiM for Windows](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.8).
