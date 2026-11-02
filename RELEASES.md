@@ -1,5 +1,21 @@
 # Published releases
 
+## 1.0.8 — November 2, 2026
+
+[Download AiM for Windows](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.8).
+
+Compound title amendments can now strike a quoted portion of the first line, complete intervening lines, and a quoted portion of the final line before inserting replacement language. Both printed-number and unnumbered title rows are supported. Replacement strokes remain plain blue lines without arrowheads. Every clause must resolve safely; an unresolved clause holds that entire amendment for review.
+
+The issue popup now provides continuous scrolling through the original PDF, with a Page field and Go button; Enter also jumps to the typed page. Original amendment highlights remain aligned. The viewer can reach original pages after the `-0-` marker without treating them as amendment instructions. Nearby pages render on demand, with at most five resident page canvases; closing the popup or clearing the cache releases them.
+
+All 192 source tests passed locally and on GitHub. The actual packaged Windows app passed the full batch/folder/cancel/retry/cache/error/preview/OCR regression. Two controlled compound-title PDFs verified partial/full/partial markings across five physical rows with zero changed body pixels outside the requested strikeouts. An eight-page source PDF verified scroll, mouse wheel, typed jumps, Enter, invalid-page rejection, highlighting, rapid reopening and cleanup, including an 800-by-680 window. All six previous output PDFs matched their approved bytes exactly; original inputs and all 356 packaged files stayed unchanged. Folder-choice responses were controlled during QA; trusted IPC and real file writes were exercised. These checks are not a measured human precision/recall benchmark.
+
+Published from main by [the successful workflow](https://github.com/Alexander-D-Loyd/Amends-In-Maker/actions/runs/41502992888). Tag `v1.0.8` targets tested source `410c769a58b37851f5ea6bb26ae7e94989988cb4`. The tested ZIP was reconstructed with zero normalized files; both published asset sizes and SHA-256 digests, the latest release and the tag target were verified.
+
+ZIP: `Amends-In-Maker-Windows-1.0.8.zip` (170,912,240 bytes). Keep `AiM.exe`, `Application Files` and `Documents` together and open `AiM/AiM.exe`.
+
+SHA-256: `f43d4d496e8c8cd8edb2b31a3f704d78785d8ca0ce4e330cb578d5e4e99d5276`.
+
 ## 1.0.7 — October 30, 2026
 
 [Download the cleaner AiM Windows package](https://github.com/Alexander-D-Loyd/Amends-In-Maker/releases/tag/v1.0.7).
