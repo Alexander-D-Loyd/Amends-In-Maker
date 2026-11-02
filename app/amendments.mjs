@@ -18,6 +18,8 @@ const phrase=(text,context=text)=>values(substantiveTokens(text,context));
 const equals=(a,b)=>a.length===b.length && a.every((v,i)=>v===b[i]);
 const quotedSource=String.raw`““[^”]+””|“[^“”]*“[^“”]*”[^“”]*”|“[^”]+”|"[^"]+"|‘[^’]+’|'[^']+'`;
 const quotes=text=>Array.from(text.matchAll(new RegExp(quotedSource,'g')),m=>m[0].slice(1,-1));
+function outsideQuotes(text,pattern){const quoted=[...text.matchAll(new RegExp(quotedSource,'g'))];return [...text.matchAll(pattern)].filter(m=>!quoted.some(q=>m.index>=q.index&&m.index<q.index+q[0].length));}
+const deletionOperations=text=>outsideQuotes(text,/\b(?:strike\s+out|delete|remove)\b/gi);
 // Some instruction PDFs append an annotated copy of the whole bill.
 const proposedHeading=/(?:^|\n)[ \t]*PROPOSED[ \t]+AMENDMENTS(?:[ \t]*(?=\n|$)|[ \t]+(?:TO\b|RN\b))/i;
 export function instructionsEnd(text){
@@ -73,22 +75,23 @@ export function parseAmendments(text){
     const source=trimFooter(section.source);
     const marker=/\b(?:and\s*)?insert\s*:\s*/i.exec(source);
     const directive=instructionSpacing(marker?source.slice(0,marker.index+marker[0].length):source).replace(/\s+/g,' ').trim();
+    const command=directive.replace(new RegExp(quotedSource,'g'),m=>' '.repeat(m.length));
     const insertText=marker?source.slice(marker.index+marker[0].length).trim():'';
-    const deleting=/\b(?:strike\s+out|delete|remove)\b/i.test(directive);
-    const inserting=/\binsert\b/i.test(directive);
+    const deleting=/\b(?:strike\s+out|delete|remove)\b/i.test(command);
+    const inserting=/\binsert\b/i.test(command);
     const action=deleting?(inserting?'replace':'delete'):(inserting?'insert':'unsupported');
-    const between=/between\s+lines?\s+(\d+)\s+and\s+(\d+)/i.exec(directive);
-    const beforeLine=/\bbefore\s+(?:the\s+)?line\s+(\d+)\b/i.exec(directive);
-    const afterLine=/\bafter\s+(?:the\s+)?(?:last\s+)?line\s+(\d+)\b/i.exec(directive);
-    const relativeLine=/\b(above|below)\s+(?:the\s+)?line\s+(\d+)\b/i.exec(directive);
-    const billEnd=/\b(?:at\s+(?:the\s+)?end\s+of\s+(?:the\s+)?bill|after\s+(?:the\s+)?(?:last|final)\s+line(?:\s+of\s+(?:the\s+)?bill)?(?=\s*[,;:]|\s+insert\b))\b/i.test(directive);
-    const lines=/\blines?\s+(\d+)(?:\s*(?:to|through|and|[-–—])\s*(\d+))?/i.exec(directive);
-    const page=/\bpage\s+(\d+)/i.exec(directive);
-    const title=/\bin\s+the\s+title\b/i.test(directive);
-    const heading=/\bin\s+the\s+heading\b/i.test(directive);
+    const between=/between\s+lines?\s+(\d+)\s+and\s+(\d+)/i.exec(command);
+    const beforeLine=/\bbefore\s+(?:the\s+)?line\s+(\d+)\b/i.exec(command);
+    const afterLine=/\bafter\s+(?:the\s+)?(?:last\s+)?line\s+(\d+)\b/i.exec(command);
+    const relativeLine=/\b(above|below)\s+(?:the\s+)?line\s+(\d+)\b/i.exec(command);
+    const billEnd=/\b(?:at\s+(?:the\s+)?end\s+of\s+(?:the\s+)?bill|after\s+(?:the\s+)?(?:last|final)\s+line(?:\s+of\s+(?:the\s+)?bill)?(?=\s*[,;:]|\s+insert\b))\b/i.test(command);
+    const lines=/\blines?\s+(\d+)(?:\s*(?:to|through|and|[-–—])\s*(\d+))?/i.exec(command);
+    const page=/\bpage\s+(\d+)/i.exec(command);
+    const title=/\bin\s+the\s+title\b/i.test(command);
+    const heading=/\bin\s+the\s+heading\b/i.test(command);
     const anchor=/\b(after|before)\s+(?:(?:the\s+)?(?:first|second|third|fourth|fifth|last)\s+)?(“[^”]+”|"[^"]+"|‘[^’]+’|'[^']+')/i.exec(directive);
     const deletion=/\b(?:strike\s+out|delete|remove)\s+([\s\S]*?)(?:\band\s+insert|$)/i.exec(directive);
-    const ordinal=/\b(first|second|third|fourth|fifth|last)\b/i.exec(deletion?.[1] || anchor?.[0] || '')?.[1]?.toLowerCase();
+    const ordinal=outsideQuotes(deletion?.[1]||anchor?.[0]||'',/\b(first|second|third|fourth|fifth|last)\b/gi)[0]?.[1]?.toLowerCase();
     const occurrence=ordinal?({first:1,second:2,third:3,fourth:4,fifth:5,last:-1}[ordinal]):null;
     const externalReference=externalBillReference(insertText);
     let error='';
@@ -96,7 +99,7 @@ export function parseAmendments(text){
     if(action==='unsupported')error='Instruction wording is not supported. Review this amendment manually.';
     if(inserting && !marker)error='The insertion text is not clearly separated by “insert:”.';
     if(inserting && !insertText)error='No insertion text was found after “insert:”.';
-    return {number:section.number,source,directive,insertText,action,page:page?Number(page[1]):null,title,heading,lineStart:lines?Number(lines[1]):null,lineEnd:lines?Number(lines[2]||lines[1]):null,between:between?[Number(between[1]),Number(between[2])]:null,beforeLine:beforeLine?Number(beforeLine[1]):null,afterLine:afterLine?Number(afterLine[1]):null,relativeLine:relativeLine?{position:relativeLine[1].toLowerCase(),line:Number(relativeLine[2])}:null,billEnd,anchor:anchor?quotes(anchor[2])[0]:null,position:anchor?.[1]?.toLowerCase()||null,deleteText:quotes(deletion?.[1]||''),occurrence,all:/\ball\s+occurrences\b/i.test(directive),externalReference,error};
+    return {number:section.number,source,directive,insertText,action,page:page?Number(page[1]):null,title,heading,lineStart:lines?Number(lines[1]):null,lineEnd:lines?Number(lines[2]||lines[1]):null,between:between?[Number(between[1]),Number(between[2])]:null,beforeLine:beforeLine?Number(beforeLine[1]):null,afterLine:afterLine?Number(afterLine[1]):null,relativeLine:relativeLine?{position:relativeLine[1].toLowerCase(),line:Number(relativeLine[2])}:null,billEnd,anchor:anchor?quotes(anchor[2])[0]:null,position:anchor?.[1]?.toLowerCase()||null,deleteText:quotes(deletion?.[1]||''),occurrence,all:/\ball\s+occurrences\b/i.test(command),externalReference,error};
   });
 }
 function scopedBlocks(rule,doc){
@@ -104,11 +107,14 @@ function scopedBlocks(rule,doc){
   if(rule.title||rule.heading){
     const start=blocks.findIndex(b=>(rule.heading?/^Introduced\s+by\b/i:/^An\s+act\b/i).test(b.text.slice(b.margin.length)));
     if(start<0)throw Error(`The bill ${rule.heading?'heading':'title'} could not be located in the Previous Version.`);
+    if(rule.page&&blocks[start].page!==rule.page)throw Error(`The referenced page does not contain the bill ${rule.heading?'heading':'title'}.`);
+    const numbered=!!blocks[start].margin;
     const found=[];
     for(let i=start;i<blocks.length && blocks[i].page===blocks[start].page;i++){
       const body=blocks[i].text.slice(blocks[i].margin.length);
       if(rule.heading&&i>start&&(/^(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b|^An\s+act\b/i.test(body)))break;
-      if(i>start && (/legislative\s+counsel|^AB\s+\d+,|^SB\s+\d+,|^The people\b/i.test(body)||blocks[i].margin))break;
+      if(i>start && (/legislative\s+counsel|^AB\s+\d+,|^SB\s+\d+,|^The people\b/i.test(body)||blocks[i].margin&&!numbered))break;
+      if(numbered&&Number(blocks[i].margin.match(/\d+/)?.[0])!==found.length+1)throw Error(`The printed ${rule.heading?'heading':'title'} line sequence is incomplete or ambiguous.`);
       found.push(blocks[i]);
     }
     if(rule.lineStart&&(rule.lineStart<1||rule.lineEnd>found.length))throw Error(`The referenced ${rule.heading?'heading':'title'} line range was not found.`);
@@ -170,7 +176,7 @@ function compile(rule,doc){
     if(!indices.length)throw Error('The Previous Version has no readable digest text.');
     return [{start:indices[0],end:indices.at(-1)+1,replacement:phrase(rule.insertText,doc.text),sourceOffset:tokens[indices[0]].start,digest:true}];
   }
-  if(!rule.title&&(/\bstrike\s+out\s+pages?\s+\d+/i.test(rule.directive)||(rule.directive.match(/\b(?:strike\s+out|delete|remove)\b/gi)||[]).length>1))return compileCompound(rule,doc);
+  if(outsideQuotes(rule.directive,/\bstrike\s+out\s+pages?\s+\d+/gi).length||deletionOperations(rule.directive).length>1)return compileCompound(rule,doc);
   const tokens=doc.effectiveTokens||doc.tokens,blocks=titleAuthorBlocks(rule,doc,scopedBlocks(rule,doc),tokens);
   const indices=tokenIndices(tokens,blocks);
   const replacement=phrase(rule.insertText,doc.text);
@@ -265,30 +271,36 @@ function compile(rule,doc){
 }
 function compileCompound(rule,doc){
   const tokens=doc.effectiveTokens||doc.tokens;
-  const events=[...rule.directive.matchAll(new RegExp(String.raw`\bon\s+page\s+\d+|\bin\s+lines?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+pages?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+lines?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+(?:the\s+(?:first|second|third|fourth|fifth|last)\s+)?(?:${quotedSource})`,'gi'))];
+  const textScope=rule.title||rule.heading;
+  if(rule.title&&rule.heading)throw Error('The compound instruction mixes title and heading scopes.');
+  const events=outsideQuotes(rule.directive,new RegExp(String.raw`\bon\s+page\s+\d+|\bin\s+lines?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+pages?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+lines?\s+\d+(?:\s*(?:to|through|and|[-–—])\s*\d+)?|\bstrike\s+out\s+(?:the\s+(?:first|second|third|fourth|fifth|last)\s+)?(?:${quotedSource})`,'gi'));
+  let remainder='',cursor=0;for(const event of events){remainder+=rule.directive.slice(cursor,event.index);cursor=event.index+event[0].length;}remainder+=rule.directive.slice(cursor);
+  if(remainder.replace(/\b(?:in\s+the\s+(?:title|heading)|inclusive|and\s+insert|and)\b/gi,'').replace(/[\s,;:.]/g,''))throw Error('Part of this compound instruction is not supported.');
   const patches=[];let page=null,lineStart=null,lineEnd=null;
   for(const match of events){
     const text=match[0],numbers=[...text.matchAll(/\d+/g)].map(m=>Number(m[0]));
     if(/^on\s+page/i.test(text)){page=numbers[0];lineStart=lineEnd=null;continue;}
     if(/^in\s+line/i.test(text)){lineStart=numbers[0];lineEnd=numbers[1]||lineStart;continue;}
-    if(/strike\s+out\s+(?:pages?|lines?)\s+\d/i.test(text)){
-      const pages=/strike\s+out\s+pages?/i.test(text),first=numbers[0],last=numbers[1]||first;
-      if(last<first||(!pages&&!page&&!rule.heading))throw Error('A deletion range has no valid page scope.');
-      const selected=rule.heading?scopedBlocks({...rule,lineStart:first,lineEnd:last},doc):doc.blocks.filter(b=>!b.ignored&&b.margin&&(pages?b.page>=first&&b.page<=last:b.page===page&&Number(b.margin.match(/\d+/)?.[0])>=first&&Number(b.margin.match(/\d+/)?.[0])<=last));
+    if(/^strike\s+out\s+(?:pages?|lines?)\s+\d/i.test(text)){
+      const pages=/^strike\s+out\s+pages?/i.test(text),first=numbers[0],last=numbers[1]||first;
+      if(first<1||last<first||(!pages&&!page&&!textScope))throw Error('A deletion range has no valid page or line scope.');
+      if(pages&&textScope)throw Error('A whole-page deletion cannot be combined with a title or heading scope.');
+      const selected=textScope?scopedBlocks({...rule,page,lineStart:first,lineEnd:last},doc):doc.blocks.filter(b=>!b.ignored&&b.margin&&(pages?b.page>=first&&b.page<=last:b.page===page&&Number(b.margin.match(/\d+/)?.[0])>=first&&Number(b.margin.match(/\d+/)?.[0])<=last));
       if(!selected.length||(pages&&(first<1||last>doc.pages)))throw Error('A referenced page or margin-line deletion range was not found.');
-      if(!pages&&!rule.heading&&(!selected.some(b=>Number(b.margin.match(/\d+/)?.[0])===first)||!selected.some(b=>Number(b.margin.match(/\d+/)?.[0])===last)))throw Error('The complete printed margin-line deletion range was not found.');
+      if(!pages&&!textScope&&(selected.length!==last-first+1||selected.some((b,i)=>Number(b.margin.match(/\d+/)?.[0])!==first+i)))throw Error('The complete printed margin-line deletion range was not found.');
       const indices=tokens.map((t,i)=>selected.some(b=>t.start>=b.start+b.margin.length&&t.start<b.end)&&selected.some(b=>t.end>b.start+b.margin.length&&t.end<=b.end)?i:-1).filter(i=>i>=0);
       if(!indices.length)throw Error('A deletion range contains no active text.');
       patches.push({start:indices[0],end:indices.at(-1)+1,replacement:[]});
+      lineStart=lineEnd=null;
     }else{
-      if((!page&&!rule.heading)||!lineStart)throw Error('A quoted replacement in a compound instruction needs an explicit page and line.');
-      const ordinal=/\b(first|second|third|fourth|fifth|last)\b/i.exec(text)?.[1]?.toLowerCase();
+      if((!page&&!textScope)||!lineStart)throw Error('A quoted replacement in a compound instruction needs an explicit page and line, or a scoped title/heading line.');
+      const ordinal=outsideQuotes(text,/\b(first|second|third|fourth|fifth|last)\b/gi)[0]?.[1]?.toLowerCase();
       patches.push(...compile({...rule,directive:text,page,lineStart,lineEnd,action:'delete',insertText:'',deleteText:quotes(text),occurrence:ordinal?({first:1,second:2,third:3,fourth:4,fifth:5,last:-1}[ordinal]):null,between:null},doc));
     }
   }
   if(!patches.length)throw Error('The compound instruction could not be resolved.');
   // Every strike-out must be consumed; never silently verify only its final clause.
-  if(events.filter(m=>/^strike\s+out/i.test(m[0])).length!==(rule.directive.match(/\b(?:strike\s+out|delete|remove)\b/gi)||[]).length)throw Error('Part of this compound instruction is not supported.');
+  if(events.filter(m=>/^strike\s+out/i.test(m[0])).length!==deletionOperations(rule.directive).length)throw Error('Part of this compound instruction is not supported.');
   if(rule.action==='replace')patches.at(-1).replacement=phrase(rule.insertText,doc.text);
   const ordered=patches.sort((a,b)=>a.start-b.start),merged=[];
   for(const patch of ordered){

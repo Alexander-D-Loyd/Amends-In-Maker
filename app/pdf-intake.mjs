@@ -66,6 +66,8 @@ export function confirmPdfReading(entry,reading,replacement){
  return {...entry,doc,pages,revision:(entry.revision||0)+1};
 }
 
-export async function renderPdfPage(entry,pageNumber,canvas,{scale=1.3}={}){
- const task=pdfjs.getDocument({data:entry.bytes.slice(),...options()});try{const pdf=await task.promise;if(!Number.isInteger(pageNumber)||pageNumber<1||pageNumber>pdf.numPages)throw Error('Choose an available PDF page.');const page=await pdf.getPage(pageNumber),viewport=page.getViewport({scale:Math.max(.3,Math.min(3,scale))});canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const context=canvas.getContext('2d',{alpha:false});await page.render({canvasContext:context,viewport,background:'rgb(255,255,255)',annotationMode:0}).promise;return {pages:pdf.numPages,width:viewport.width,height:viewport.height,transform:Array.from(viewport.transform)};}finally{await task.destroy().catch(()=>{});}
+export async function renderPdfPage(entry,pageNumber,canvas,{scale=1.3,signal}={}){
+ if(signal?.aborted)throw new DOMException('PDF rendering cancelled.','AbortError');
+ const task=pdfjs.getDocument({data:entry.bytes.slice(),...options()}),cancel=()=>{task.destroy().catch(()=>{});};signal?.addEventListener('abort',cancel,{once:true});
+ try{const pdf=await task.promise;if(signal?.aborted)throw new DOMException('PDF rendering cancelled.','AbortError');if(!Number.isInteger(pageNumber)||pageNumber<1||pageNumber>pdf.numPages)throw Error('Choose an available PDF page.');const page=await pdf.getPage(pageNumber),viewport=page.getViewport({scale:Math.max(.3,Math.min(3,scale))});canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const context=canvas.getContext('2d',{alpha:false});await page.render({canvasContext:context,viewport,background:'rgb(255,255,255)',annotationMode:0}).promise;return {pages:pdf.numPages,width:viewport.width,height:viewport.height,transform:Array.from(viewport.transform)};}finally{signal?.removeEventListener('abort',cancel);await task.destroy().catch(()=>{});}
 }

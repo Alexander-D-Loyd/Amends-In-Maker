@@ -82,3 +82,9 @@ Duplicate uploads are identified from source bytes before PDF parsing or OCR. Th
 The parser, document model and selected PDF/OCR helpers originate in [Document Compare](https://github.com/Alexander-D-Loyd/Document-Compare) commit `0cdcc7051fdeed406f4295abb45f9bf1f75b007e`; `upstream-provenance.json` records the original hashes. The standalone batch flow, PDF coordinate mapping, markup/export and save bridge are separate components. OCR-only dictionaries repair word spacing; there is no style-review interface.
 
 Private test PDFs, reader models, app profiles and screenshots are excluded from public source and Windows packages. Third-party notices are in `THIRD_PARTY_NOTICES.md`.
+
+## Compound instructions and PDF review
+
+Title and heading compounds can join a quoted deletion within the first line, complete intervening physical lines, and a quoted deletion within the last line. Every clause must resolve within its stated scope. Missing, ambiguous, overlapping or unsupported clauses hold the entire amendment for review; they cannot leave partial marks from that amendment. Replacements keep plain blue strikeout lines, without arrowheads.
+
+The issue-review PDF scrolls continuously through the original file. Enter a page number and select Go, or press Enter, to jump directly; the previous/next-page buttons remain available. Issue highlights stay on their original pages. Only nearby pages are rendered, so a long PDF does not keep a full-size canvas for every page in memory.
