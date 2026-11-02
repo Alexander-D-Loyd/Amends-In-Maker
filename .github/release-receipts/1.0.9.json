@@ -1,0 +1,16 @@
+{
+  "format": "amends-in-maker.verified-release",
+  "repository": "Alexander-D-Loyd/Amends-In-Maker",
+  "version": "1.0.9",
+  "sourceCommit": "039985b2c563bd786ba513e4e30e6e09378d52c4",
+  "tag": "v1.0.9",
+  "branch": "main",
+  "manifestPath": ".github/release-receipts/1.0.9.package-manifest.json",
+  "manifestSHA256": "734aa9770df0514474833c80af0039181e1a30a135bfdcf187e9e994c9dd9545",
+  "archiveName": "Amends-In-Maker-Windows-1.0.9.zip",
+  "archiveBytes": 170912602,
+  "archiveSHA256": "3dba85de36c4a05c731f0a0f79da39f412cb49beb5db5b76dd9c54f7f5da0145",
+  "startHere": "AiM 1.0.9\r\n\r\nOpen the AiM.exe beside the Application Files and Documents folders. Keep all three together.\r\nDrop bill PDFs and their amendment instructions on the homepage.\r\nThe bill version to mark and its amendments are the only required files.\r\nChoose an output folder once; it is remembered and remains changeable.\r\nMarked PDFs are saved automatically when the files finish loading.\r\nOutput: AB [Bill Number] [Month Day] AMENDS IN.pdf (SB is also supported).\r\nClick an issue to open its original amendment PDF and highlighted instruction.\r\nSuccessful marks may be saved with unresolved amendments clearly reported.\r\nYellow margin numbers and boxed numbers identify amendment locations.\r\nAbove/below-line arrows need only the referenced printed margin number.\r\nBlue arrows mark insertions; red lines mark strikes; plain blue lines mark\r\nstrike-and-insert instructions without arrowheads. Original PDFs stay unchanged.\r\nExisting outputs are skipped. PDF reading, OCR and markup run locally.\r\nDocuments/PACKAGE-MANIFEST.json records every packaged file except itself.\r\nSee Documents/README.md and THIRD_PARTY_NOTICES.md for scope and notices.\r\n",
+  "title": "AiM 1.0.9",
+  "notes": "Continuous scrolling and typed page jumps now work in both PDF popups.\n\n- View PDF opens the marked bill as a continuous scrollable document, with a Page field and Go button. Enter jumps to the typed physical PDF page.\n- Review issues retains the same controls for the original amendment source, with the problematic instruction highlighted. The displayed page counter follows scrolling.\n- Previous and next page buttons remain optional shortcuts. Invalid page numbers do not navigate.\n- Both viewers render nearby pages on demand, keep at most five resident page canvases, and release rendering resources when closed.\n\nAll 192 source checks and the complete packaged-app regression passed. Native tests exercised View PDF on a ten-page original bill, mouse-wheel scrolling, Go and Enter, invalid pages, partial-result issue and marked-bill popups, rapid reopening, Clear Cache and an 800-by-680 window. Displayed marked-page pixels matched the saved PDF exactly. All six prior output PDFs matched their approved bytes; original inputs and all 356 packaged files remained unchanged.\n\nExtract the complete ZIP and open AiM/AiM.exe. Keep AiM.exe, Application Files and Documents together. This release supersedes 1.0.8, whose continuous viewer covered Review issues but omitted the separate View PDF popup."
+}
